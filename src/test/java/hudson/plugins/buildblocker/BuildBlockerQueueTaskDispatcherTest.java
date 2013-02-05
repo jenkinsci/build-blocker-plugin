@@ -93,6 +93,81 @@ public class BuildBlockerQueueTaskDispatcherTest extends HudsonTestCase {
         }
     }
 
+    public void testMultipleExecutors() throws Exception {
+
+        // Job1 runs for 1 second, no dependencies
+        FreeStyleProject theJob1 = createFreeStyleProject( "MultipleExecutor_Job1" );
+        theJob1.getBuildersList().add( new Shell("sleep 1; exit 0") );
+        assertTrue( theJob1.getBuilds().isEmpty() );
+
+        // Job2 returns immediatly but can't run while Job1 is running.
+        FreeStyleProject theJob2 = createFreeStyleProject( "MultipleExecutor_Job2" );
+        {
+            BuildBlockerProperty theProperty = new BuildBlockerProperty();
+            theProperty.setBlockingJobs( "MultipleExecutor_Job1" );
+            theJob2.addProperty( theProperty );
+        }
+        assertTrue( theJob1.getBuilds().isEmpty() );
+
+        // allow executing two simultanious jobs
+        int theOldNumExecutors = Hudson.getInstance().getNumExecutors();
+        Hudson.getInstance().setNumExecutors( 2 );
+
+        Future<FreeStyleBuild> theFuture1 = theJob1.scheduleBuild2( 0 );
+        Future<FreeStyleBuild> theFuture2 = theJob2.scheduleBuild2( 0 );
+        while ( !theFuture1.isDone() || !theFuture2.isDone() )
+        {
+            // let the jobs process
+        }
+
+        // check if job2 was not started before job1 was finished
+        Run theRun1 = theJob1.getLastBuild();
+        Run theRun2 = theJob2.getLastBuild();
+        assertTrue( theRun1.getTimeInMillis() + theRun1.getDuration() <= theRun2.getTimeInMillis() );
+
+        // restore changed settings
+        Hudson.getInstance().setNumExecutors( theOldNumExecutors );
+        theJob2.delete();
+        theJob1.delete();
+    }
+
+    public void testSelfExcludingJobs() throws Exception {
+
+        BuildBlockerProperty theProperty = new BuildBlockerProperty();
+        theProperty.setBlockingJobs( "SelfExcluding_.*" );
+
+        FreeStyleProject theJob1 = createFreeStyleProject( "SelfExcluding_Job1" );
+        theJob1.addProperty( theProperty );
+        assertTrue( theJob1.getBuilds().isEmpty() );
+
+        FreeStyleProject theJob2 = createFreeStyleProject( "SelfExcluding_Job2" );
+        theJob2.addProperty( theProperty );
+        assertTrue( theJob1.getBuilds().isEmpty() );
+
+        // allow executing two simultanious jobs
+        int theOldNumExecutors = Hudson.getInstance().getNumExecutors();
+        Hudson.getInstance().setNumExecutors( 2 );
+
+        Future<FreeStyleBuild> theFuture1 = theJob1.scheduleBuild2( 0 );
+        Future<FreeStyleBuild> theFuture2 = theJob2.scheduleBuild2( 0 );
+
+        long theStartTime = System.currentTimeMillis();
+        long theEndTime = theStartTime;
+        while ( ( !theFuture1.isDone() || !theFuture2.isDone() )
+        		&& theEndTime < theStartTime + 5000 )
+        {
+        	theEndTime = System.currentTimeMillis();
+        }
+
+        // if more then five seconds have passed, we assume its a deadlock.
+        assertTrue( theEndTime < theStartTime + 5000 );
+
+        // restore changed settings
+        Hudson.getInstance().setNumExecutors( theOldNumExecutors );
+        theJob2.delete();
+        theJob1.delete();
+    }
+
     /**
      * Returns the future object for a newly created project.
      * @param blockingJobName the name for the project

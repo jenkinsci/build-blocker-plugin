@@ -76,7 +76,7 @@ public class BuildBlockerQueueTaskDispatcher extends QueueTaskDispatcher {
             if(property != null) {
                 String blockingJobs = property.getBlockingJobs();
 
-                SubTask subTask = new BlockingJobsMonitor(blockingJobs).getBlockingJob();
+                SubTask subTask = new BlockingJobsMonitor(blockingJobs).getBlockingJob(item);
 
                 if(subTask != null) {
                     return CauseOfBlockage.fromMessage(Messages._BlockingJobIsRunning(subTask.getDisplayName()));

@@ -74,25 +74,25 @@ public class BlockingJobsMonitorTest extends HudsonTestCase {
         }
 
         BlockingJobsMonitor blockingJobsMonitorUsingNull = new BlockingJobsMonitor(null);
-        assertNull(blockingJobsMonitorUsingNull.getBlockingJob());
+        assertNull(blockingJobsMonitorUsingNull.getBlockingJob(null));
 
         BlockingJobsMonitor blockingJobsMonitorNotMatching = new BlockingJobsMonitor("xxx");
-        assertNull(blockingJobsMonitorNotMatching.getBlockingJob());
+        assertNull(blockingJobsMonitorNotMatching.getBlockingJob(null));
 
         BlockingJobsMonitor blockingJobsMonitorUsingFullName = new BlockingJobsMonitor(blockingJobName);
-        assertEquals(blockingJobName, blockingJobsMonitorUsingFullName.getBlockingJob().getDisplayName());
+        assertEquals(blockingJobName, blockingJobsMonitorUsingFullName.getBlockingJob(null).getDisplayName());
 
         BlockingJobsMonitor blockingJobsMonitorUsingRegex = new BlockingJobsMonitor("block.*");
-        assertEquals(blockingJobName, blockingJobsMonitorUsingRegex.getBlockingJob().getDisplayName());
+        assertEquals(blockingJobName, blockingJobsMonitorUsingRegex.getBlockingJob(null).getDisplayName());
 
         BlockingJobsMonitor blockingJobsMonitorUsingMoreLines = new BlockingJobsMonitor("xxx\nblock.*\nyyy");
-        assertEquals(blockingJobName, blockingJobsMonitorUsingMoreLines.getBlockingJob().getDisplayName());
+        assertEquals(blockingJobName, blockingJobsMonitorUsingMoreLines.getBlockingJob(null).getDisplayName());
 
         // wait until blocking job stopped
         while (! future.isDone()) {
             TimeUnit.SECONDS.sleep(1);
         }
 
-        assertNull(blockingJobsMonitorUsingFullName.getBlockingJob());
+        assertNull(blockingJobsMonitorUsingFullName.getBlockingJob(null));
     }
 }
