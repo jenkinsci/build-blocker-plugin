@@ -28,6 +28,7 @@ import hudson.matrix.MatrixConfiguration;
 import hudson.model.Computer;
 import hudson.model.Executor;
 import hudson.model.Queue;
+import hudson.model.AbstractProject;
 import hudson.model.queue.SubTask;
 import jenkins.model.Jenkins;
 import org.apache.commons.lang.StringUtils;
@@ -88,8 +89,10 @@ public class BlockingJobsMonitor {
                         task = ((MatrixConfiguration) task).getParent();
                     }
 
+                    AbstractProject project = (AbstractProject) task;
+
                     for (String blockingJob : this.blockingJobs) {
-                        if(task.getFullDisplayName().matches(blockingJob)) {
+                        if(project.getFullName().matches(blockingJob)) {
                             return subTask;
                         }
                     }
@@ -108,7 +111,8 @@ public class BlockingJobsMonitor {
         for (Queue.BuildableItem buildableItem : buildableItems) {
         	if(item != buildableItem) {
 	            for (String blockingJob : this.blockingJobs) {
-	                if(buildableItem.task.getFullDisplayName().matches(blockingJob)) {
+                    AbstractProject project = (AbstractProject) buildableItem.task;
+	                if(project.getFullName().matches(blockingJob)) {
 	                    return buildableItem.task;
 	                }
 	            }
