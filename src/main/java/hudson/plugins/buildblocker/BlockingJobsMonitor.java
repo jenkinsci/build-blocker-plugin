@@ -28,6 +28,7 @@ import hudson.matrix.MatrixConfiguration;
 import hudson.model.Computer;
 import hudson.model.Executor;
 import hudson.model.Job;
+import hudson.model.Label;
 import hudson.model.Node;
 import hudson.model.Queue;
 import jenkins.model.Jenkins;
@@ -105,7 +106,9 @@ public class BlockingJobsMonitor {
     public Job checkNodeForQueueEntries(Queue.Item item, Node node) {
         List<Queue.Item> buildableItemsOnNode = new ArrayList<Queue.Item>();
         for (Queue.Item buildableItem : Jenkins.getInstance().getQueue().getItems()) {
-            if (buildableItem.getAssignedLabel().contains(node)) {
+            Label assignedLabel = buildableItem.getAssignedLabel();
+            // assignedLabel is null when the job may run anywhere
+            if (assignedLabel == null || assignedLabel.contains(node)) {
                 buildableItemsOnNode.add(buildableItem);
             }
         }
