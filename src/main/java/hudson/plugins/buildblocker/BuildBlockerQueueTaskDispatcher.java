@@ -132,7 +132,7 @@ public class BuildBlockerQueueTaskDispatcher extends QueueTaskDispatcher {
                 result = ((MatrixConfiguration) result).getParent();
             }
 
-            return CauseOfBlockage.fromMessage(Messages._BlockingJobIsRunning(item.getInQueueForString(), result.getDisplayName()));
+            return CauseOfBlockage.fromMessage(Messages._BlockingJobIsRunning(item.getInQueueForString(), result.getFullDisplayName()));
         }
         return null;
     }
