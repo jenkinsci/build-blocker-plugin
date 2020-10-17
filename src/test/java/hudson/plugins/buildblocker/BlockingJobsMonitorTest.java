@@ -79,7 +79,7 @@ public class BlockingJobsMonitorTest {
 
         // wait until blocking job started
         while (!slave.getComputer().getExecutors().get(0).isBusy()) {
-            TimeUnit.SECONDS.sleep(1);
+            TimeUnit.SECONDS.sleep(1L);
         }
     }
 
@@ -103,7 +103,7 @@ public class BlockingJobsMonitorTest {
 
         // wait until blocking job started
         while (!slave.getComputer().getExecutors().get(0).isBusy()) {
-            TimeUnit.SECONDS.sleep(1);
+            TimeUnit.SECONDS.sleep(1L);
         }
     }
 
