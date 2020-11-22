@@ -79,7 +79,7 @@ public class BlockingJobsMonitorTest {
 
         // wait until blocking job started
         while (!slave.getComputer().getExecutors().get(0).isBusy()) {
-            TimeUnit.SECONDS.sleep(1L);
+            TimeUnit.SECONDS.sleep(1);
         }
     }
 
@@ -103,7 +103,7 @@ public class BlockingJobsMonitorTest {
 
         // wait until blocking job started
         while (!slave.getComputer().getExecutors().get(0).isBusy()) {
-            TimeUnit.SECONDS.sleep(1L);
+            TimeUnit.SECONDS.sleep(1);
         }
     }
 
@@ -115,7 +115,7 @@ public class BlockingJobsMonitorTest {
         assertNull(blockingJobsMonitorUsingNull.checkForBuildableQueueEntries(null));
         // wait until blocking job stopped
         while (!future.isDone()) {
-            TimeUnit.SECONDS.sleep(1L);
+            TimeUnit.SECONDS.sleep(1);
         }
     }
 
@@ -127,7 +127,7 @@ public class BlockingJobsMonitorTest {
         assertNull(blockingJobsMonitorUsingNull.checkForBuildableQueueEntries(null));
         // wait until blocking job stopped
         while (!futureWorkflow.isDone()) {
-            TimeUnit.SECONDS.sleep(1L);
+            TimeUnit.SECONDS.sleep(1);
         }
     }
 
@@ -139,7 +139,7 @@ public class BlockingJobsMonitorTest {
         assertNull(blockingJobsMonitorNotMatching.checkForBuildableQueueEntries(null));
         // wait until blocking job stopped
         while (!future.isDone()) {
-            TimeUnit.SECONDS.sleep(1L);
+            TimeUnit.SECONDS.sleep(1);
         }
     }
 
@@ -151,7 +151,7 @@ public class BlockingJobsMonitorTest {
         assertNull(blockingJobsMonitorNotMatching.checkForBuildableQueueEntries(null));
         // wait until blocking job stopped
         while (!futureWorkflow.isDone()) {
-            TimeUnit.SECONDS.sleep(1L);
+            TimeUnit.SECONDS.sleep(1);
         }
     }
 
@@ -165,7 +165,7 @@ public class BlockingJobsMonitorTest {
         assertNull(blockingJobsMonitorUsingFullName.checkForBuildableQueueEntries(null));
         // wait until blocking job stopped
         while (!future.isDone()) {
-            TimeUnit.SECONDS.sleep(1L);
+            TimeUnit.SECONDS.sleep(1);
         }
     }
 
@@ -179,7 +179,7 @@ public class BlockingJobsMonitorTest {
         assertNull(blockingJobsMonitorUsingFullName.checkForBuildableQueueEntries(null));
         // wait until blocking job stopped
         while (!futureWorkflow.isDone()) {
-            TimeUnit.SECONDS.sleep(1L);
+            TimeUnit.SECONDS.sleep(1);
         }
     }
 
@@ -191,7 +191,7 @@ public class BlockingJobsMonitorTest {
         assertNull(blockingJobsMonitorUsingRegex.checkForBuildableQueueEntries(null));
         // wait until blocking job stopped
         while (!future.isDone()) {
-            TimeUnit.SECONDS.sleep(1L);
+            TimeUnit.SECONDS.sleep(1);
         }
     }
 
@@ -203,7 +203,7 @@ public class BlockingJobsMonitorTest {
         assertNull(blockingJobsMonitorUsingRegex.checkForBuildableQueueEntries(null));
         // wait until blocking job stopped
         while (!futureWorkflow.isDone()) {
-            TimeUnit.SECONDS.sleep(1L);
+            TimeUnit.SECONDS.sleep(1);
         }
     }
 
@@ -216,7 +216,7 @@ public class BlockingJobsMonitorTest {
         assertNull(blockingJobsMonitorUsingMoreLines.checkForBuildableQueueEntries(null));
         // wait until blocking job stopped
         while (!future.isDone()) {
-            TimeUnit.SECONDS.sleep(1L);
+            TimeUnit.SECONDS.sleep(1);
         }
     }
 
@@ -229,7 +229,7 @@ public class BlockingJobsMonitorTest {
         assertNull(blockingJobsMonitorUsingMoreLines.checkForBuildableQueueEntries(null));
        // wait until blocking job stopped
        while (!futureWorkflow.isDone()) {
-           TimeUnit.SECONDS.sleep(1L);
+           TimeUnit.SECONDS.sleep(1);
        }
     }
 
@@ -241,7 +241,7 @@ public class BlockingJobsMonitorTest {
         assertNull(blockingJobsMonitorUsingWrongRegex.checkForBuildableQueueEntries(null));
         // wait until blocking job stopped
         while (!future.isDone()) {
-            TimeUnit.SECONDS.sleep(1L);
+            TimeUnit.SECONDS.sleep(1);
         }
     }
 
@@ -253,7 +253,7 @@ public class BlockingJobsMonitorTest {
         assertNull(blockingJobsMonitorUsingWrongRegex.checkForBuildableQueueEntries(null));
         // wait until blocking job stopped
         while (!futureWorkflow.isDone()) {
-            TimeUnit.SECONDS.sleep(1L);
+            TimeUnit.SECONDS.sleep(1);
         }
     }
 }
