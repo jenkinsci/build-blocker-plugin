@@ -41,7 +41,7 @@ import static java.util.logging.Level.FINE;
  * Queue task dispatcher that evaluates the given blocking jobs in the config of the
  * actual job. If a blocking job is detected, the actual job will stay in the build queue.
  */
-@Extension
+@Extension(optional = true)
 public class BuildBlockerQueueTaskDispatcher extends QueueTaskDispatcher {
 
     private static final Logger LOG = Logger.getLogger(BuildBlockerQueueTaskDispatcher.class.getName());
