@@ -57,7 +57,6 @@ public class BlockingJobsMonitor {
 
     private static final Logger LOG = Logger.getLogger(BlockingJobsMonitor.class.getName());
 
-
     /**
      * Constructor using the job configuration entry for blocking jobs
      *
