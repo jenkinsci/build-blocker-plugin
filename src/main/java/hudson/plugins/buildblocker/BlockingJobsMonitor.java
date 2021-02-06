@@ -25,11 +25,8 @@
 package hudson.plugins.buildblocker;
 
 import hudson.matrix.MatrixConfiguration;
-import hudson.model.Computer;
-import hudson.model.Executor;
-import hudson.model.Job;
-import hudson.model.Node;
-import hudson.model.Queue;
+import hudson.model.*;
+import hudson.model.queue.WorkUnit;
 import jenkins.model.Jenkins;
 import org.apache.commons.lang.StringUtils;
 
@@ -171,7 +168,13 @@ public class BlockingJobsMonitor {
 
     private Job checkForRunningBuilds(Executor executor) {
         if (executor.isBusy()) {
-            Queue.Task task = executor.getCurrentWorkUnit().work.getOwnerTask();
+            Queue.Task task;
+            WorkUnit unit = executor.getCurrentWorkUnit();
+            if (unit != null) {
+                task = unit.work.getOwnerTask();
+            } else {
+                return null;
+            }
 
             if (task instanceof MatrixConfiguration) {
                 task = ((MatrixConfiguration) task).getParent();
