@@ -25,6 +25,7 @@
 <!--
   This view is used to render the installed plugins page.
 -->
+<?jelly escape-by-default='true'?>
 <div>
     This plugin blocks a build if one of the given jobs is running.
 

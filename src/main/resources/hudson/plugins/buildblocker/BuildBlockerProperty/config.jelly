@@ -21,7 +21,7 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 -->
-
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
     <f:optionalBlock name="useBuildBlocker" title="${%Block build if certain jobs are running}"
                      checked="${instance.useBuildBlocker}" inline="true"
