@@ -101,8 +101,10 @@ public class BlockingJobsMonitor {
 
     public Job checkNodeForQueueEntries(Queue.Item item, Node node) {
         List<Queue.Item> buildableItemsOnNode = new ArrayList<Queue.Item>();
-        for (Queue.Item buildableItem : Jenkins.getInstance().getQueue().getItems()) {
-            if (buildableItem.getAssignedLabel().contains(node)) {
+        for (Queue.Item buildableItem : Jenkins.get().getQueue().getItems()) {
+            Label assignedLabel = buildableItem.getAssignedLabel();
+            // assignedLabel is null when the job may run anywhere
+            if (assignedLabel == null || assignedLabel.contains(node)) {
                 buildableItemsOnNode.add(buildableItem);
             }
         }
