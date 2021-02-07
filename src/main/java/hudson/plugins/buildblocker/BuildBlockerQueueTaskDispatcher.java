@@ -41,7 +41,7 @@ import static java.util.logging.Level.FINE;
  * Queue task dispatcher that evaluates the given blocking jobs in the config of the
  * actual job. If a blocking job is detected, the actual job will stay in the build queue.
  */
-@Extension
+@Extension(optional = true)
 public class BuildBlockerQueueTaskDispatcher extends QueueTaskDispatcher {
 
     private static final Logger LOG = Logger.getLogger(BuildBlockerQueueTaskDispatcher.class.getName());
@@ -163,9 +163,7 @@ public class BuildBlockerQueueTaskDispatcher extends QueueTaskDispatcher {
         if (checkWasCalledInNodeContext(node) && properties.getBlockLevel().isNode() && !properties.getBlockLevel().isGlobal()) {
             LOG.logp(FINE, getClass().getName(), "checkAccordingToProperties", "calling checkNodeForRunningBuilds");
             Job checkNodeForRunningBuildsResult = jobsMonitor.checkNodeForRunningBuilds(node);
-            if (foundBlocker(checkNodeForRunningBuildsResult)) {
-                return checkNodeForRunningBuildsResult;
-            }
+
             if (properties.getScanQueueFor().isAll()) {
                 LOG.logp(FINE, getClass().getName(), "checkAccordingToProperties", "calling checkNodeForQueueEntries");
                 Job checkNodeForQueueEntriesResult = jobsMonitor.checkNodeForQueueEntries(item, node);
@@ -177,6 +175,10 @@ public class BuildBlockerQueueTaskDispatcher extends QueueTaskDispatcher {
                 Job checkNodeForBuildableQueueEntriesResult = jobsMonitor.checkNodeForBuildableQueueEntries(item, node);
                 if (foundBlocker(checkNodeForBuildableQueueEntriesResult)) {
                     return checkNodeForBuildableQueueEntriesResult;
+                }
+            } else {
+                if (foundBlocker(checkNodeForRunningBuildsResult)) {
+                    return checkNodeForRunningBuildsResult;
                 }
             }
         }
@@ -198,7 +200,11 @@ public class BuildBlockerQueueTaskDispatcher extends QueueTaskDispatcher {
     @CheckForNull
     private BuildBlockerProperty getBuildBlockerProperty(Queue.Item item) {
         if (!(item.task instanceof Job)) {
-            return null;
+            if (!(item.task.getOwnerTask() instanceof Job)) {
+                return null;
+            } else {
+                return ((Job<?, ?>) item.task.getOwnerTask()).getProperty(BuildBlockerProperty.class);
+            }
         }
         Job<?,?> job = (Job<?,?>) item.task;
 

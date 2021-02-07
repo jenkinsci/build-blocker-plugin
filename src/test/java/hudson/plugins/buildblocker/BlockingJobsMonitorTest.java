@@ -256,5 +256,4 @@ public class BlockingJobsMonitorTest {
             TimeUnit.SECONDS.sleep(1);
         }
     }
-
 }

@@ -35,7 +35,7 @@
 
     <artifactId>build-blocker-plugin</artifactId>
     <name>Build Blocker Plugin</name>
-    <version>1.7.4-SNAPSHOT</version>
+    <version>1.7.5-SNAPSHOT</version>
     <packaging>hpi</packaging>
     <url>https://wiki.jenkins-ci.org/display/JENKINS/Build+Blocker+Plugin</url>
 
@@ -53,11 +53,16 @@
             <name>Frederik Fromm</name>
             <email>frederik.fromm@gmail.com</email>
         </developer>
+        <developer>
+            <id>dmone</id>
+            <name>Denis Mone</name>
+            <email>monedenis@gmail.com</email>
+        </developer>
     </developers>
 
     <scm>
-        <connection>scm:git:https://ffromm@github.com/jenkinsci/build-blocker-plugin.git</connection>
-        <developerConnection>scm:git:https://ffromm@github.com/jenkinsci/build-blocker-plugin.git</developerConnection>
+        <connection>scm:git:https://github.com/jenkinsci/build-blocker-plugin.git</connection>
+        <developerConnection>scm:git:git@github.com:jenkinsci/build-blocker-plugin.git</developerConnection>
         <url>https://github.com/jenkinsci/build-blocker-plugin.git</url>
         <tag>HEAD</tag>
     </scm>
@@ -65,14 +70,14 @@
     <repositories>
         <repository>
             <id>repo.jenkins-ci.org</id>
-            <url>http://repo.jenkins-ci.org/public/</url>
+            <url>https://repo.jenkins-ci.org/public/</url>
         </repository>
     </repositories>
 
     <pluginRepositories>
         <pluginRepository>
             <id>repo.jenkins-ci.org</id>
-            <url>http://repo.jenkins-ci.org/public/</url>
+            <url>https://repo.jenkins-ci.org/public/</url>
         </pluginRepository>
     </pluginRepositories>
 
