@@ -12,7 +12,6 @@ import hudson.model.Queue;
 import hudson.model.Queue.BuildableItem;
 import hudson.model.queue.SubTask;
 import hudson.model.queue.WorkUnit;
-import hudson.slaves.DumbSlave;
 import jenkins.model.Jenkins;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,7 +22,6 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -86,8 +84,7 @@ public class BlockingJobsMonitorUnitTest {
     private BlockingJobsMonitor monitor;
 
     @Before
-    public void setup() throws IllegalAccessException, ClassNotFoundException, InvocationTargetException,
-            InstantiationException {
+    public void setup() throws IllegalAccessException {
         monitor = new BlockingJobsMonitor("blockingProject\nblockingMatrixProject");
 
         trainProjects();
@@ -214,7 +211,7 @@ public class BlockingJobsMonitorUnitTest {
         when(queue.getBuildableItems(eq(computer))).thenReturn(asList(nonBlockingBuildableItem, buildableItem));
         when(queue.getBuildableItems(eq(differentComputer))).thenReturn(Collections.<BuildableItem>emptyList());
 
-        assertThat(monitor.checkNodeForBuildableQueueEntries(Mockito.mock(BuildableItem.class), differentNode), is(nullValue()));
+        assertThat(monitor.checkNodeForBuildableQueueEntries(PowerMockito.mock(BuildableItem.class), differentNode), is(nullValue()));
     }
 
     @Test
@@ -238,7 +235,7 @@ public class BlockingJobsMonitorUnitTest {
         Computer differentComputer = PowerMockito.mock(Computer.class);
         when(differentNode.toComputer()).thenReturn(differentComputer);
 
-        assertThat(monitor.checkNodeForQueueEntries(Mockito.mock(BuildableItem.class), differentNode), is(nullValue()));
+        assertThat(monitor.checkNodeForQueueEntries(PowerMockito.mock(BuildableItem.class), differentNode), is(nullValue()));
     }
 
     @Test

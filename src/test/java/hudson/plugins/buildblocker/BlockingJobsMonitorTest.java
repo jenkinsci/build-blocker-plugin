@@ -87,7 +87,7 @@ public class BlockingJobsMonitorTest {
         blockingJobName = "blockingJob";
 
         // clear queue from preceding tests
-        Jenkins.getInstance().getQueue().clear();
+        Jenkins.get().getQueue().clear();
 
         // init slave
         DumbSlave slave = j.createSlave();
@@ -97,9 +97,9 @@ public class BlockingJobsMonitorTest {
         c.connect(false).get(); // wait until it's connected
 
         WorkflowJob workflowBlockingProject = j.jenkins.createProject(WorkflowJob.class, blockingJobName);
-        workflowBlockingProject.setDefinition(new CpsFlowDefinition("node('label') { sleep 10}"));
+        workflowBlockingProject.setDefinition(new CpsFlowDefinition("node('label') { sleep 10}", true));
 
-        futureWorkflow = workflowBlockingProject.scheduleBuild2(0);
+        futureWorkflow = workflowBlockingProject.scheduleBuild2(1);
 
         // wait until blocking job started
         while (!slave.getComputer().getExecutors().get(0).isBusy()) {
