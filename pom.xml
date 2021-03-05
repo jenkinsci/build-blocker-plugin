@@ -37,7 +37,7 @@
     <name>Build Blocker Plugin</name>
     <version>1.7.7-SNAPSHOT</version>
     <packaging>hpi</packaging>
-    <url>https://wiki.jenkins-ci.org/display/JENKINS/Build+Blocker+Plugin</url>
+    <url>https://github.com/jenkinsci/build-blocker-plugin</url>
 
     <licenses>
         <license>
