@@ -35,7 +35,7 @@
 
     <artifactId>build-blocker-plugin</artifactId>
     <name>Build Blocker Plugin</name>
-    <version>1.7.7</version>
+    <version>1.7.8-SNAPSHOT</version>
     <packaging>hpi</packaging>
     <url>https://github.com/jenkinsci/build-blocker-plugin</url>
 
@@ -64,7 +64,7 @@
         <connection>scm:git:https://github.com/jenkinsci/build-blocker-plugin.git</connection>
         <developerConnection>scm:git:git@github.com:jenkinsci/build-blocker-plugin.git</developerConnection>
         <url>https://github.com/jenkinsci/build-blocker-plugin.git</url>
-        <tag>build-blocker-plugin-1.7.7</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <repositories>
