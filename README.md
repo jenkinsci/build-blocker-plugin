@@ -15,7 +15,7 @@ plugin](https://wiki.jenkins.io/display/JENKINS/Locks+and+Latches+plugin).
 The main difference is, that it uses regular expressions to find
 potentially blocking jobs by their names in the list of currently
 running builds. It uses the
-[QueueTaskDispatcher](https://wiki.jenkins-ci.org/display/JENKINS/Extension+points#Extensionpoints-hudson.model.queue.QueueTaskDispatcher)
+[QueueTaskDispatcher](https://www.jenkins.io/doc/developer/extensions/jenkins-core/#queuetaskdispatcher)
 to check if the actual job may be build. The dispatcher uses the list of
 regular expressions configured in the job. If one of the currently
 running jobs matches with one of the regular expressions, the job stays
