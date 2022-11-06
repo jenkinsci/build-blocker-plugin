@@ -68,7 +68,7 @@ public class BlockingJobsMonitor {
     }
 
     public Job checkForBuildableQueueEntries(Queue.Item item) {
-        List<Queue.BuildableItem> buildableItems = Jenkins.getInstance().getQueue().getBuildableItems();
+        List<Queue.BuildableItem> buildableItems = Jenkins.get().getQueue().getBuildableItems();
 
         Job buildableItem = checkForPlannedBuilds(item, buildableItems);
         if (buildableItem != null) {
@@ -79,7 +79,7 @@ public class BlockingJobsMonitor {
     }
 
     public Job checkForQueueEntries(Queue.Item item) {
-        List<Queue.Item> buildableItems = asList(Jenkins.getInstance().getQueue().getItems());
+        List<Queue.Item> buildableItems = asList(Jenkins.get().getQueue().getItems());
 
         Job buildableItem = checkForPlannedBuilds(item, buildableItems);
         if (buildableItem != null) {
@@ -90,7 +90,7 @@ public class BlockingJobsMonitor {
     }
 
     public Job checkNodeForBuildableQueueEntries(Queue.Item item, Node node) {
-        List<? extends Queue.Item> buildableItems = Jenkins.getInstance().getQueue().getBuildableItems(node.toComputer());
+        List<? extends Queue.Item> buildableItems = Jenkins.get().getQueue().getBuildableItems(node.toComputer());
 
         Job buildableItem = checkForPlannedBuilds(item, buildableItems);
         if (buildableItem != null) {
@@ -102,7 +102,7 @@ public class BlockingJobsMonitor {
 
     public Job checkNodeForQueueEntries(Queue.Item item, Node node) {
         List<Queue.Item> buildableItemsOnNode = new ArrayList<Queue.Item>();
-        for (Queue.Item buildableItem : Jenkins.getInstance().getQueue().getItems()) {
+        for (Queue.Item buildableItem : Jenkins.get().getQueue().getItems()) {
             Label assignedLabel = buildableItem.getAssignedLabel();
             // assignedLabel is null when the job may run anywhere
             if (assignedLabel == null || assignedLabel.contains(node)) {
@@ -120,7 +120,7 @@ public class BlockingJobsMonitor {
     }
 
     public Job checkAllNodesForRunningBuilds() {
-        Computer[] computers = Jenkins.getInstance().getComputers();
+        Computer[] computers = Jenkins.get().getComputers();
 
         for (Computer computer : computers) {
             Job task = checkComputerForRunningBuilds(computer);
