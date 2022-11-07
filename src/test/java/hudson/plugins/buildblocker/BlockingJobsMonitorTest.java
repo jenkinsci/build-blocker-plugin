@@ -60,7 +60,7 @@ public class BlockingJobsMonitorTest {
         blockingJobName = "blockingJob";
 
         // clear queue from preceding tests
-        Jenkins.getInstance().getQueue().clear();
+        Jenkins.get().getQueue().clear();
 
         // init slave
         DumbSlave slave = j.createSlave();

@@ -162,7 +162,7 @@ public class BlockingJobsMonitorUnitTest {
     private void trainJenkins() {
         PowerMockito.mockStatic(Jenkins.class);
         Jenkins jenkins = PowerMockito.mock(Jenkins.class);
-        when(Jenkins.getInstance()).thenReturn(jenkins);
+        when(Jenkins.get()).thenReturn(jenkins);
         when(jenkins.getQueue()).thenReturn(queue);
         when(jenkins.getComputers()).thenReturn(new Computer[]{computer});
     }
