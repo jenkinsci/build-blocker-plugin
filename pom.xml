@@ -35,7 +35,7 @@
 
     <artifactId>build-blocker-plugin</artifactId>
     <name>Build Blocker Plugin</name>
-    <version>${revision}${changelist}</version>
+    <version>1.7.9-SNAPSHOT</version>
     <packaging>hpi</packaging>
     <url>https://github.com/jenkinsci/build-blocker-plugin</url>
 
@@ -94,8 +94,6 @@
     </dependencyManagement>
 
     <properties>
-        <revision>1.7.9-SNAPSHOT</revision>
-        <changelist>-SNAPSHOT</changelist>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <bom>2.222.x</bom>
         <jenkins.version>2.222.4</jenkins.version>
