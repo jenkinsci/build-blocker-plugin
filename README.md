@@ -52,6 +52,21 @@ Either buildable builds can stop another build from running (for instance
 all planned builds can stop another build from running (blocked builds,
 pending builds waiting builds and buildable builds)
 
+## Declarative Pipeline
+
+Inside a declarative pipeline, this can be used as is:
+
+```
+pipeline {
+    agent any
+    
+    options {
+      buildBlocker (useBuildBlocker: true, blockLevel: 'NODE', scanQueueFor: 'ALL', blockingJobs: 'foo-.*')
+    }   
+    ....
+}    
+```
+
 ## JobDSL
 Usage inside jobdsl scripts is simple as well.
 For example in order to create a pipeline job which blocks on global level

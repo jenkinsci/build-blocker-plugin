@@ -30,6 +30,7 @@ import hudson.model.JobProperty;
 import hudson.model.JobPropertyDescriptor;
 import hudson.util.FormValidation;
 import org.apache.commons.lang.StringUtils;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
@@ -84,6 +85,7 @@ public class BuildBlockerProperty extends JobProperty<Job<?, ?>> {
      * Descriptor
      */
     @Extension
+    @Symbol("buildBlocker")
     public static final class BuildBlockerDescriptor extends JobPropertyDescriptor {
 
         /**
