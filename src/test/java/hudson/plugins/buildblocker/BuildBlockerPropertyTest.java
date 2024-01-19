@@ -25,18 +25,27 @@
 package hudson.plugins.buildblocker;
 
 import hudson.model.Job;
-import org.jvnet.hudson.test.HudsonTestCase;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.mockito.Mock;
+
+import static org.junit.Assert.assertTrue;
 
 /**
  * Unit tests
  */
-public class BuildBlockerPropertyTest extends HudsonTestCase {
+public class BuildBlockerPropertyTest {
+
+    @Rule
+    public JenkinsRule j = new JenkinsRule();
 
     /**
      * Simple property test
      *
      * @throws Exception
      */
+    @Test
     public void testIsApplicable() throws Exception {
         BuildBlockerProperty property = new BuildBlockerPropertyBuilder().createBuildBlockerProperty();
 
