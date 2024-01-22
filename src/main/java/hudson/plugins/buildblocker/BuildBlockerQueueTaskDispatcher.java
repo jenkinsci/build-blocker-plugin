@@ -26,6 +26,7 @@ package hudson.plugins.buildblocker;
 
 import hudson.Extension;
 import hudson.matrix.MatrixConfiguration;
+import hudson.model.ItemGroup;
 import hudson.model.Job;
 import hudson.model.Node;
 import hudson.model.Queue;
@@ -91,6 +92,10 @@ public class BuildBlockerQueueTaskDispatcher extends QueueTaskDispatcher {
     @Override
     public CauseOfBlockage canRun(Queue.Item item) {
         if (item.task instanceof Job) {
+
+
+            ItemGroup<?> parent = item.task.getParent();
+
             BuildBlockerProperty property = getBuildBlockerProperty(item);
 
             if (property != null && property.isUseBuildBlocker()) {
