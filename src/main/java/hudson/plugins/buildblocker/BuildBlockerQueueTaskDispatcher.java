@@ -31,7 +31,7 @@ import hudson.model.Node;
 import hudson.model.Queue;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.model.queue.QueueTaskDispatcher;
-
+import jenkins.model.Jenkins;
 import javax.annotation.CheckForNull;
 import java.util.logging.Logger;
 
@@ -91,7 +91,8 @@ public class BuildBlockerQueueTaskDispatcher extends QueueTaskDispatcher {
     @Override
     public CauseOfBlockage canRun(Queue.Item item) {
         if (item.task instanceof Job) {
-            BuildBlockerProperty property = getBuildBlockerProperty(item);
+
+            IBuildBlockerProperty property = getBuildBlockerProperty(item);
 
             if (property != null && property.isUseBuildBlocker()) {
                 CauseOfBlockage Job = checkForBlock(item, property);
@@ -106,7 +107,7 @@ public class BuildBlockerQueueTaskDispatcher extends QueueTaskDispatcher {
 
     @Override
     public CauseOfBlockage canTake(Node node, Queue.BuildableItem item) {
-        BuildBlockerProperty property = getBuildBlockerProperty(item);
+        IBuildBlockerProperty property = getBuildBlockerProperty(item);
         if (property != null && property.isUseBuildBlocker()) {
             CauseOfBlockage causeOfBlockage = checkForBlock(node, item, property);
             if (causeOfBlockage != null) {
@@ -116,11 +117,11 @@ public class BuildBlockerQueueTaskDispatcher extends QueueTaskDispatcher {
         return super.canTake(node, item);
     }
 
-    private CauseOfBlockage checkForBlock(Queue.Item item, BuildBlockerProperty blockingJobs) {
+    private CauseOfBlockage checkForBlock(Queue.Item item, IBuildBlockerProperty blockingJobs) {
         return checkForBlock(null, item, blockingJobs);
     }
 
-    private CauseOfBlockage checkForBlock(Node node, Queue.Item item, BuildBlockerProperty property) {
+    private CauseOfBlockage checkForBlock(Node node, Queue.Item item, IBuildBlockerProperty property) {
         if (property.getBlockingJobs() == null) {
             return null;
         }
@@ -138,7 +139,7 @@ public class BuildBlockerQueueTaskDispatcher extends QueueTaskDispatcher {
         return null;
     }
 
-    private Job checkAccordingToProperties(Node node, Queue.Item item, BuildBlockerProperty properties) {
+    private Job checkAccordingToProperties(Node node, Queue.Item item, IBuildBlockerProperty properties) {
         BlockingJobsMonitor jobsMonitor = monitorFactory.build(properties.getBlockingJobs());
 
         if (checkWasCalledInGlobalContext(node) && properties.getBlockLevel().isGlobal()) {
@@ -197,7 +198,8 @@ public class BuildBlockerQueueTaskDispatcher extends QueueTaskDispatcher {
     }
 
     @CheckForNull
-    private BuildBlockerProperty getBuildBlockerProperty(Queue.Item item) {
+    private IBuildBlockerProperty getBuildBlockerProperty(Queue.Item item) {
+
         if (!(item.task instanceof Job)) {
             if (!(item.task.getOwnerTask() instanceof Job)) {
                 return null;
@@ -206,7 +208,25 @@ public class BuildBlockerQueueTaskDispatcher extends QueueTaskDispatcher {
             }
         }
         Job<?,?> job = (Job<?,?>) item.task;
+        IBuildBlockerProperty property = job.getProperty(BuildBlockerProperty.class);
+        if (property != null && property.isUseBuildBlocker()) {
+            LOG.logp(FINE, getClass().getName(), "getBuildBlockerProperty", "Found build blocker property on job " + job.getFullDisplayName());
+            return property;
+        }
 
-        return job.getProperty(BuildBlockerProperty.class);
+        // Check property on parent
+        try {
+            LOG.logp(FINE, getClass().getName(), "getBuildBlockerProperty", "checking parent getBuildBlockerFolderProperty");
+            property = Jenkins.get().getDescriptorByType(BuildBlockerFolderProperty.DescriptorImpl.class).getBuildBlockerFolderProperty(job);
+            if (property != null && property.isUseBuildBlocker()) {
+                LOG.logp(FINE, getClass().getName(), "getBuildBlockerProperty", "Found build blocker property on parent of job " + job.getFullDisplayName());
+                return property;
+            }
+        }
+        catch (Exception e) {
+            LOG.logp(FINE, getClass().getName(), "getBuildBlockerProperty", "Unable to check parent for build blocker property. Make sure cloudbees-folder plugin is installed.", e);
+        }
+
+        return null;
     }
 }

@@ -1,0 +1,42 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+    <f:optionalBlock name="useBuildBlocker" title="${%Block build if certain jobs are running}"
+                     checked="${instance.useBuildBlocker}" inline="true"
+                     help="/plugin/build-blocker-plugin/help-usageBuildBlocker.html">
+        <f:entry title="${%Blocking Jobs}" field="blockingJobs">
+            <f:textarea/>
+        </f:entry>
+        <f:section title="${%configure block level}">
+            <f:entry description="${%blocks this build if any of the defined jobs is running on any node}">
+                <f:radio title="${%block on global level}" name="blockLevel" value="global"
+                         checked="${empty instance.blockLevel or instance.blockLevel.global}"/>
+            </f:entry>
+            <f:entry
+                    description="${%blocks this build if any of the defined jobs is running on the same node this build is running on}">
+                <f:radio title="${%block on node level}" name="blockLevel" value="node"
+                         checked="${instance.blockLevel.node}"/>
+            </f:entry>
+        </f:section>
+        <f:section title="${%configure queue scanning}">
+            <f:entry description="${%consider ready to run builds of the defined jobs for the blocking decision}">
+                <f:radio title="${%check buildable queued builds}" name="scanQueueFor" value="buildable"
+                         checked="${instance.scanQueueFor.buildable}"/>
+            </f:entry>
+            <f:entry
+                    description="${%consider all builds of the defined jobs for the blocking decision, including blocked, waiting, pending and buildable}">
+                <f:radio title="${%check all queued builds}" name="scanQueueFor" value="all"
+                         checked="${instance.scanQueueFor.all}"/>
+            </f:entry>
+            <f:entry>
+                <f:radio title="${%disable queue checking}" name="scanQueueFor" value="disabled"
+                         checked="${empty instance.scanQueueFor or instance.scanQueueFor.disabled}"/>
+            </f:entry>
+        </f:section>
+        <f:entry title="">
+            <div align="right">
+                <f:validateButton title="${%Validate Regex}" progress="${%Checking...}"
+                                  method="checkRegex" with="blockingJobs"/>
+            </div>
+        </f:entry>
+    </f:optionalBlock>
+</j:jelly>

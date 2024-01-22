@@ -46,7 +46,7 @@ import static java.util.logging.Level.FINE;
  * Job property that stores the line feed separated list of
  * regular expressions that define the blocking jobs.
  */
-public class BuildBlockerProperty extends JobProperty<Job<?, ?>> {
+public class BuildBlockerProperty extends JobProperty<Job<?, ?>> implements IBuildBlockerProperty {
 
     private static final Logger LOG = Logger.getLogger(BuildBlockerProperty.class.getName());
 
@@ -55,18 +55,22 @@ public class BuildBlockerProperty extends JobProperty<Job<?, ?>> {
     private QueueScanScope scanQueueFor;
     private String blockingJobs;
 
+    @Override
     public BlockLevel getBlockLevel() {
         return blockLevel != null ? blockLevel : BlockLevel.UNDEFINED;
     }
 
+    @Override
     public QueueScanScope getScanQueueFor() {
         return scanQueueFor != null ? scanQueueFor : QueueScanScope.DISABLED;
     }
 
+    @Override
     public boolean isUseBuildBlocker() {
         return useBuildBlocker;
     }
 
+    @Override
     public String getBlockingJobs() {
         return blockingJobs;
     }
@@ -103,24 +107,7 @@ public class BuildBlockerProperty extends JobProperty<Job<?, ?>> {
          * Check the regular expression entered by the user
          */
         public FormValidation doCheckRegex(@QueryParameter final String blockingJobs) {
-            List<String> listJobs = null;
-            if (StringUtils.isNotBlank(blockingJobs)) {
-                listJobs = Arrays.asList(blockingJobs.split("\n"));
-            }
-            if (listJobs != null) {
-                for (String blockingJob : listJobs) {
-                    try {
-                        Pattern.compile(blockingJob);
-                    } catch (PatternSyntaxException pse) {
-                        return FormValidation.error("Invalid regular expression [" +
-                                blockingJob + "] exception: " +
-                                pse.getDescription());
-                    }
-                }
-                return FormValidation.ok();
-            } else {
-                return FormValidation.ok();
-            }
+            return BuildBlockerUtils.doCheckRegex(blockingJobs);
         }
 
         /**
