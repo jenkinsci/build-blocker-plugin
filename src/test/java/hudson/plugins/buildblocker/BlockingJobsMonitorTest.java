@@ -60,7 +60,6 @@ public class BlockingJobsMonitorTest {
     private static DumbSlave slave;
     private  Queue queue;
 
-
     @Before
     public void setup() throws Exception{
         slave = j.createSlave();

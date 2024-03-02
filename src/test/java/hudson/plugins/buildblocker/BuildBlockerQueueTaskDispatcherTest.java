@@ -37,8 +37,6 @@ import hudson.model.queue.CauseOfBlockage;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.SlaveComputer;
 import hudson.tasks.Shell;
-import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -113,9 +111,9 @@ public class BuildBlockerQueueTaskDispatcherTest {
 
         causeOfBlockage = dispatcher.canRun(item); //
 
-       //assertNotNull(causeOfBlockage);
+       assertNotNull(causeOfBlockage);
 
-      // assertTrue(causeOfBlockage.getShortDescription().contains(" by " + blockingJobName + "."));
+       assertTrue(causeOfBlockage.getShortDescription().contains(" by " + blockingJobName + "."));
 
         while (!(future1.isDone() && future2.isDone() && future3.isDone())) {
             // wait until jobs are done.
