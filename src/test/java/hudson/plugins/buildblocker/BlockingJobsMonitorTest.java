@@ -24,11 +24,14 @@
 
 package hudson.plugins.buildblocker;
 
+import hudson.Functions;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.labels.LabelAtom;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.SlaveComputer;
+import hudson.tasks.BatchFile;
+import hudson.tasks.CommandInterpreter;
 import hudson.tasks.Shell;
 import jenkins.model.Jenkins;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
@@ -72,8 +75,8 @@ public class BlockingJobsMonitorTest {
         FreeStyleProject blockingProject = j.createFreeStyleProject(blockingJobName);
         blockingProject.setAssignedLabel(new LabelAtom("label"));
 
-        Shell shell = new Shell("sleep 1");
-        blockingProject.getBuildersList().add(shell);
+        CommandInterpreter commandInterpreter = Functions.isWindows() ? new BatchFile("ping -n 1 127.0.0.1 >nul") : new Shell("sleep 1");
+        blockingProject.getBuildersList().add(commandInterpreter);
 
         future = blockingProject.scheduleBuild2(0);
 

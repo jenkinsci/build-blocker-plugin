@@ -24,6 +24,7 @@
 
 package hudson.plugins.buildblocker;
 
+import hudson.Functions;
 import hudson.model.Action;
 import hudson.model.Computer;
 import hudson.model.Executor;
@@ -36,6 +37,8 @@ import hudson.model.labels.LabelAtom;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.SlaveComputer;
+import hudson.tasks.BatchFile;
+import hudson.tasks.CommandInterpreter;
 import hudson.tasks.Shell;
 import org.junit.Rule;
 import org.junit.Test;
@@ -84,11 +87,11 @@ public class BuildBlockerQueueTaskDispatcherTest {
 
         String blockingJobName = "blockingJob";
 
-        Shell shell = new Shell("sleep 1");
+        CommandInterpreter commandInterpreter = Functions.isWindows() ? new BatchFile("ping -n 1 127.0.0.1 >nul") : new Shell("sleep 1");
 
-        Future<FreeStyleBuild> future1 = createBlockingProject("xxx", shell, masterLabel);
-        Future<FreeStyleBuild> future2 = createBlockingProject(blockingJobName, shell, masterLabel);
-        Future<FreeStyleBuild> future3 = createBlockingProject("yyy", shell, slaveLabel);
+        Future<FreeStyleBuild> future1 = createBlockingProject("xxx", commandInterpreter, masterLabel);
+        Future<FreeStyleBuild> future2 = createBlockingProject(blockingJobName, commandInterpreter, masterLabel);
+        Future<FreeStyleBuild> future3 = createBlockingProject("yyy", commandInterpreter, slaveLabel);
         // add project to slave
         FreeStyleProject project = j.createFreeStyleProject();
         project.setAssignedLabel(slaveLabel);
@@ -122,7 +125,8 @@ public class BuildBlockerQueueTaskDispatcherTest {
 
         // Job1 runs for 1 second, no dependencies
         FreeStyleProject theJob1 = j.createFreeStyleProject("MultipleExecutor_Job1");
-        theJob1.getBuildersList().add(new Shell("sleep 1; exit 0"));
+        CommandInterpreter commandInterpreter = Functions.isWindows() ? new BatchFile("ping -n 1 127.0.0.1 >nul") : new Shell("sleep 1");
+        theJob1.getBuildersList().add(commandInterpreter);
         assertTrue(theJob1.getBuilds().isEmpty());
 
         // Job2 returns immediatly but can't run while Job1 is running.
@@ -214,17 +218,17 @@ public class BuildBlockerQueueTaskDispatcherTest {
      * Returns the future object for a newly created project.
      *
      * @param blockingJobName the name for the project
-     * @param shell           the shell command task to add
+     * @param commandInterpreter the command interpreter to add
      * @param label           the label to bind to master or slave
      * @return the future object for a newly created project
      * @throws IOException
      */
-    private Future<FreeStyleBuild> createBlockingProject(String blockingJobName, Shell shell, Label label) throws
+    private Future<FreeStyleBuild> createBlockingProject(String blockingJobName, CommandInterpreter commandInterpreter, Label label) throws
             IOException {
         FreeStyleProject blockingProject = j.createFreeStyleProject(blockingJobName);
         blockingProject.setAssignedLabel(label);
 
-        blockingProject.getBuildersList().add(shell);
+        blockingProject.getBuildersList().add(commandInterpreter);
         Future<FreeStyleBuild> future = blockingProject.scheduleBuild2(0);
 
         while (!blockingProject.isBuilding()) {
