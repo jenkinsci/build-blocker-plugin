@@ -84,8 +84,8 @@
         <dependencies>
             <dependency>
                 <groupId>io.jenkins.tools.bom</groupId>
-                <artifactId>bom-2.414.x</artifactId>
-                <version>2718.v7e8a_d43b_3f0b_</version>
+                <artifactId>bom-2.387.x</artifactId>
+                <version>2543.vfb_1a_5fb_9496d</version>
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
@@ -96,7 +96,7 @@
         <revision>1.7.10</revision>
         <changelist>-SNAPSHOT</changelist>
         <gitHubRepo>jenkinsci/${project.artifactId}</gitHubRepo>
-        <jenkins.version>2.414.3</jenkins.version>
+        <jenkins.version>2.387.3</jenkins.version>
     </properties>
 
     <dependencies>

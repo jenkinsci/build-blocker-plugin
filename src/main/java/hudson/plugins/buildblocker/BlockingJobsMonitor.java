@@ -189,13 +189,8 @@ public class BlockingJobsMonitor {
                 Job job = (Job) task;
                 for (String blockingJob : this.blockingJobs) {
                     try {
-                        //if (job.getFullName().matches(blockingJob)) {
-                           // return job;
-                        //}
-                        Pattern pattern = Pattern.compile(blockingJob);
-                        Matcher matcher = pattern.matcher(job.getFullName());
-                        if (matcher.find()) {
-                            return job;
+                        if (job.getFullName().matches(blockingJob)) {
+                           return job;
                         }
                     } catch (java.util.regex.PatternSyntaxException pse) {
                         continue;

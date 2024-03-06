@@ -57,26 +57,20 @@ public class BlockingJobsMonitorTest {
     private String blockingJobName;
     private Future<FreeStyleBuild> future;
     private Future<WorkflowRun> futureWorkflow;
-    private static DumbSlave slave;
-    private  Queue queue;
 
-    @Before
-    public void setup() throws Exception{
-        slave = j.createSlave();
-        slave.setLabelString("label");
-        SlaveComputer c = slave.getComputer();
-        c.connect(false).get();
-        queue = j.jenkins.getQueue();
-    }
-
-    @After
-    public void clearQueue() throws Exception {
-        j.jenkins.getQueue().clear();
-    }
 
 
     protected void FreeStyleSetUp() throws Exception {
         blockingJobName = "blockingJob";
+        // clear queue from preceding tests
+        Jenkins.get().getQueue().clear();
+
+        // init slave
+        DumbSlave slave = j.createSlave();
+        slave.setLabelString("label");
+
+        SlaveComputer c = slave.getComputer();
+        c.connect(false).get(); // wait until it's connected
 
         FreeStyleProject blockingProject = j.createFreeStyleProject(blockingJobName);
         blockingProject.setAssignedLabel(new LabelAtom("label"));
@@ -93,6 +87,17 @@ public class BlockingJobsMonitorTest {
 
     protected void WorkFlowSetUp() throws Exception {
         blockingJobName = "blockingJob";
+
+        // clear queue from preceding tests
+        Jenkins.get().getQueue().clear();
+
+        // init slave
+        DumbSlave slave = j.createSlave();
+        slave.setLabelString("label");
+
+        SlaveComputer c = slave.getComputer();
+        c.connect(false).get(); // wait until it's connected
+
         WorkflowJob workflowBlockingProject = j.createProject(WorkflowJob.class, blockingJobName);
         workflowBlockingProject.setDefinition(new CpsFlowDefinition("node('label') { sleep 10}", true));
 
@@ -114,7 +119,6 @@ public class BlockingJobsMonitorTest {
         while (!future.isDone()) {
             TimeUnit.SECONDS.sleep(1);
         }
-        queue.maintain();
     }
 
     @Test
@@ -127,7 +131,6 @@ public class BlockingJobsMonitorTest {
         while (!futureWorkflow.isDone()) {
             TimeUnit.SECONDS.sleep(1);
         }
-        queue.maintain();
     }
 
     @Test
@@ -140,7 +143,6 @@ public class BlockingJobsMonitorTest {
         while (!future.isDone()) {
             TimeUnit.SECONDS.sleep(1);
         }
-        queue.maintain();
     }
 
     @Test
@@ -153,29 +155,24 @@ public class BlockingJobsMonitorTest {
         while (!futureWorkflow.isDone()) {
             TimeUnit.SECONDS.sleep(1);
         }
-        queue.maintain();
     }
 
     @Test
     public void testMatchingMonitorReturnsBlockingJobsDisplayNameWithFreeSytle() throws Exception {
         FreeStyleSetUp();
-
         BlockingJobsMonitor blockingJobsMonitorUsingFullName = new BlockingJobsMonitor(blockingJobName);
-
         assertEquals(blockingJobName, blockingJobsMonitorUsingFullName.checkAllNodesForRunningBuilds().getDisplayName());
         assertNull(blockingJobsMonitorUsingFullName.checkForBuildableQueueEntries(null));
         // wait until blocking job stopped
         while (!future.isDone()) {
             TimeUnit.SECONDS.sleep(1);
         }
-        queue.maintain();
     }
 
     @Test
     public void testMatchingMonitorReturnsBlockingJobsDisplayNameWithWorkflow() throws Exception {
         WorkFlowSetUp();
         BlockingJobsMonitor blockingJobsMonitorUsingFullName = new BlockingJobsMonitor(blockingJobName);
-
         assertEquals(blockingJobName, blockingJobsMonitorUsingFullName.checkAllNodesForRunningBuilds().getDisplayName
                 ());
         assertNull(blockingJobsMonitorUsingFullName.checkForBuildableQueueEntries(null));
@@ -183,13 +180,11 @@ public class BlockingJobsMonitorTest {
         while (!futureWorkflow.isDone()) {
             TimeUnit.SECONDS.sleep(1);
         }
-        queue.maintain();
     }
 
     @Test
     public void testMonitorBlocksBasedOnRegExWithFreeSytle() throws Exception {
         FreeStyleSetUp();
-
         BlockingJobsMonitor blockingJobsMonitorUsingRegex = new BlockingJobsMonitor("block.*");
         assertEquals(blockingJobName, blockingJobsMonitorUsingRegex.checkAllNodesForRunningBuilds().getDisplayName());
         assertNull(blockingJobsMonitorUsingRegex.checkForBuildableQueueEntries(null));
@@ -197,7 +192,7 @@ public class BlockingJobsMonitorTest {
         while (!future.isDone()) {
             TimeUnit.SECONDS.sleep(1);
         }
-        queue.maintain();
+
     }
 
     @Test
@@ -210,7 +205,6 @@ public class BlockingJobsMonitorTest {
         while (!futureWorkflow.isDone()) {
             TimeUnit.SECONDS.sleep(1);
         }
-        queue.maintain();
     }
 
     @Test
@@ -224,7 +218,6 @@ public class BlockingJobsMonitorTest {
         while (!future.isDone()) {
             TimeUnit.SECONDS.sleep(1);
         }
-        queue.maintain();
     }
 
    @Test
@@ -238,7 +231,6 @@ public class BlockingJobsMonitorTest {
        while (!futureWorkflow.isDone()) {
            TimeUnit.SECONDS.sleep(1);
        }
-       queue.maintain();
     }
 
     @Test
@@ -252,7 +244,6 @@ public class BlockingJobsMonitorTest {
         while (!future.isDone()) {
             TimeUnit.SECONDS.sleep(1);
         }
-        queue.maintain();
     }
 
     @Test
@@ -265,6 +256,5 @@ public class BlockingJobsMonitorTest {
         while (!futureWorkflow.isDone()) {
             TimeUnit.SECONDS.sleep(1);
         }
-        queue.maintain();
     }
 }
