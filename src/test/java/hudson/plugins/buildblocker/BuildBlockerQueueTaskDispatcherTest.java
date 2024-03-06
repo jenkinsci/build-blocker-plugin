@@ -46,7 +46,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.concurrent.Future;
 
-
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertNotNull;
@@ -60,14 +59,14 @@ import static org.junit.Assert.fail;
  */
 public class BuildBlockerQueueTaskDispatcherTest {
 
+    @Rule
+    public JenkinsRule j = new JenkinsRule();
+
     /**
      * One test for all for faster execution.
      *
      * @throws Exception
      */
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
-
     @Test
     public void testCanRun() throws Exception {
         // init slave
@@ -100,7 +99,6 @@ public class BuildBlockerQueueTaskDispatcherTest {
 
         assertNull(causeOfBlockage);
 
-
         BuildBlockerProperty property = new BuildBlockerPropertyBuilder()
                 .setBlockingJobs(".*ocki.*")
                 .setUseBuildBlocker()
@@ -109,16 +107,16 @@ public class BuildBlockerQueueTaskDispatcherTest {
 
         project.addProperty(property);
 
-        causeOfBlockage = dispatcher.canRun(item); //
+        causeOfBlockage = dispatcher.canRun(item);
+        assertNotNull(causeOfBlockage);
 
-       assertNotNull(causeOfBlockage);
-
-       assertTrue(causeOfBlockage.getShortDescription().contains(" by " + blockingJobName + "."));
+        assertTrue(causeOfBlockage.getShortDescription().contains(" by " + blockingJobName + "."));
 
         while (!(future1.isDone() && future2.isDone() && future3.isDone())) {
             // wait until jobs are done.
         }
     }
+
     @Test
     public void testMultipleExecutors() throws Exception {
 
@@ -127,7 +125,7 @@ public class BuildBlockerQueueTaskDispatcherTest {
         theJob1.getBuildersList().add(new Shell("sleep 1; exit 0"));
         assertTrue(theJob1.getBuilds().isEmpty());
 
-        // Job2 returns immediately but can't run while Job1 is running.
+        // Job2 returns immediatly but can't run while Job1 is running.
         FreeStyleProject theJob2 = j.createFreeStyleProject("MultipleExecutor_Job2");
         {
             BuildBlockerProperty theProperty = new BuildBlockerPropertyBuilder()
@@ -140,7 +138,7 @@ public class BuildBlockerQueueTaskDispatcherTest {
         }
         assertTrue(theJob1.getBuilds().isEmpty());
 
-        // allow executing two simultaneous jobs
+        // allow executing two simultanious jobs
         int theOldNumExecutors = j.jenkins.getNumExecutors();
         j.jenkins.setNumExecutors(2);
 
@@ -179,7 +177,7 @@ public class BuildBlockerQueueTaskDispatcherTest {
         theJob2.addProperty(theProperty);
         assertTrue(theJob2.getBuilds().isEmpty());
 
-        // allow executing two simultaneous jobs
+        // allow executing two simultanious jobs
         int theOldNumExecutors = j.jenkins.getNumExecutors();
         j.jenkins.setNumExecutors(2);
 

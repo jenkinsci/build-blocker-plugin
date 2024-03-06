@@ -38,6 +38,7 @@
     <version>${revision}${changelist}</version>
     <packaging>hpi</packaging>
     <url>https://github.com/jenkinsci/${project.artifactId}</url>
+
     <licenses>
         <license>
             <name>The MIT license</name>

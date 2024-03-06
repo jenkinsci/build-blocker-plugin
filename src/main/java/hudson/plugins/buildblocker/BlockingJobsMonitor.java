@@ -33,8 +33,6 @@ import org.apache.commons.lang.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -190,7 +188,7 @@ public class BlockingJobsMonitor {
                 for (String blockingJob : this.blockingJobs) {
                     try {
                         if (job.getFullName().matches(blockingJob)) {
-                           return job;
+                            return job;
                         }
                     } catch (java.util.regex.PatternSyntaxException pse) {
                         continue;

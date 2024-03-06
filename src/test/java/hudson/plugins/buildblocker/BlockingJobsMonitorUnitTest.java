@@ -24,7 +24,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.quality.Strictness;
 import org.powermock.reflect.Whitebox;
 
-
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -35,7 +34,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.only;
@@ -44,7 +42,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
-
 
 @RunWith(MockitoJUnitRunner.class)
 public class BlockingJobsMonitorUnitTest {
@@ -104,9 +101,10 @@ public class BlockingJobsMonitorUnitTest {
         trainWorkUnit();
         trainExecutors();
     }
+
     @After
     public void tearDown() {
-        if(mockedJenkins != null){
+        if (mockedJenkins != null) {
             mockedJenkins.close();
         }
     }
@@ -212,7 +210,7 @@ public class BlockingJobsMonitorUnitTest {
     public void testCheckNodeForBuildableQueueEntriesReturnsBuildableTaskThatIsQueued() {
         when(queue.getBuildableItems(eq(computer))).thenReturn(asList(nonBlockingBuildableItem, buildableItem));
 
-        assertThat((Project) monitor.checkNodeForBuildableQueueEntries(mock(BuildableItem.class), node), is(equalTo(project)));
+        assertThat((Project) monitor.checkNodeForBuildableQueueEntries(Mockito.mock(BuildableItem.class), node), is(equalTo(project)));
     }
 
     @Test
@@ -238,15 +236,15 @@ public class BlockingJobsMonitorUnitTest {
     public void testCheckNodeForQueueEntriesReturnsBuildableTaskThatIsQueued() {
         when(queue.getItems()).thenReturn(new Queue.Item[]{nonBlockingBuildableItem, buildableItem});
 
-        assertThat((Project) monitor.checkNodeForQueueEntries(mock(BuildableItem.class), node), is(equalTo(project)));
+        assertThat((Project) monitor.checkNodeForQueueEntries(Mockito.mock(BuildableItem.class), node), is(equalTo(project)));
     }
 
     @Test
     public void testCheckNodeForQueueEntriesReturnsNullForDifferentNode() {
         when(queue.getItems()).thenReturn(new Queue.Item[]{nonBlockingBuildableItem, buildableItemOnDifferentNode});
-        Node differentNode = mock(Node.class);
+        Node differentNode = mock(Node.class, withSettings().strictness(Strictness.LENIENT));
         Computer differentComputer = mock(Computer.class);
-        lenient().when(differentNode.toComputer()).thenReturn(differentComputer);
+        when(differentNode.toComputer()).thenReturn(differentComputer);
 
         assertThat(monitor.checkNodeForQueueEntries(mock(BuildableItem.class), differentNode), is(nullValue()));
     }
@@ -255,34 +253,34 @@ public class BlockingJobsMonitorUnitTest {
     public void testCheckNodeForQueueEntriesReturnsBlockedTaskThatIsQueued() {
         when(queue.getItems()).thenReturn(new Queue.Item[]{nonBlockingBlockedItem, blockedItem});
 
-        assertThat((Project) monitor.checkNodeForQueueEntries(mock(BuildableItem.class), node), is(equalTo(project)));
+        assertThat((Project) monitor.checkNodeForQueueEntries(Mockito.mock(BuildableItem.class), node), is(equalTo(project)));
     }
 
     @Test
     public void testCheckNodeForQueueEntriesReturnsNullForDifferentNodeCaseBlocked() {
         when(queue.getItems()).thenReturn(new Queue.Item[]{nonBlockingBlockedItem, blockedItemOnDifferentNode});
-        Node differentNode = mock(Node.class);
+        Node differentNode = mock(Node.class, withSettings().strictness(Strictness.LENIENT));
         Computer differentComputer = mock(Computer.class);
-        lenient().when(differentNode.toComputer()).thenReturn(differentComputer);
+        when(differentNode.toComputer()).thenReturn(differentComputer);
 
-        assertThat(monitor.checkNodeForQueueEntries(mock(BuildableItem.class), differentNode), is(nullValue()));
+        assertThat(monitor.checkNodeForQueueEntries(Mockito.mock(BuildableItem.class), differentNode), is(nullValue()));
     }
 
     @Test
     public void testCheckNodeForQueueEntriesReturnsWaitingTaskThatIsQueued() {
         when(queue.getItems()).thenReturn(new Queue.Item[]{nonBlockingWaitingItem, waitingItem});
 
-        assertThat((Project) monitor.checkNodeForQueueEntries(mock(BuildableItem.class), node), is(equalTo(project)));
+        assertThat((Project) monitor.checkNodeForQueueEntries(Mockito.mock(BuildableItem.class), node), is(equalTo(project)));
     }
 
     @Test
     public void testCheckNodeForQueueEntriesReturnsNullForDifferentNodeCaseWaiting() {
         when(queue.getItems()).thenReturn(new Queue.Item[]{nonBlockingWaitingItem, waitingItemOnDifferentNode});
-        Node differentNode = mock(Node.class);
+        Node differentNode = mock(Node.class, withSettings().strictness(Strictness.LENIENT));
         Computer differentComputer = mock(Computer.class);
-        lenient().when(differentNode.toComputer()).thenReturn(differentComputer);
+        when(differentNode.toComputer()).thenReturn(differentComputer);
 
-        assertThat(monitor.checkNodeForQueueEntries(mock(BuildableItem.class), differentNode), is(nullValue()));
+        assertThat(monitor.checkNodeForQueueEntries(Mockito.mock(BuildableItem.class), differentNode), is(nullValue()));
     }
 
     @Test
@@ -306,14 +304,14 @@ public class BlockingJobsMonitorUnitTest {
     public void testCheckForBuildableQueueEntriesReturnsBuildableTaskThatIsQueued() {
         when(queue.getBuildableItems()).thenReturn(asList(nonBlockingBuildableItem, buildableItem));
 
-        assertThat((Project) monitor.checkForBuildableQueueEntries(mock(BuildableItem.class)), is(equalTo(project)));
+        assertThat((Project) monitor.checkForBuildableQueueEntries(Mockito.mock(BuildableItem.class)), is(equalTo(project)));
     }
 
     @Test
     public void testCheckForBuildableQueueEntriesReturnsProjectForDifferentNode() {
         when(queue.getBuildableItems()).thenReturn(asList(nonBlockingBuildableItem, buildableItem));
 
-        assertThat((Project) monitor.checkForBuildableQueueEntries(mock(BuildableItem.class)), is(equalTo(project)));
+        assertThat((Project) monitor.checkForBuildableQueueEntries(Mockito.mock(BuildableItem.class)), is(equalTo(project)));
     }
 
     @Test
@@ -327,49 +325,49 @@ public class BlockingJobsMonitorUnitTest {
     public void testCheckForQueueEntriesReturnsBuildableTaskThatIsQueued() {
         when(queue.getItems()).thenReturn(new Queue.Item[]{nonBlockingBuildableItem, buildableItem});
 
-        assertThat((Project) monitor.checkForQueueEntries(mock(BuildableItem.class)), is(equalTo(project)));
+        assertThat((Project) monitor.checkForQueueEntries(Mockito.mock(BuildableItem.class)), is(equalTo(project)));
     }
 
     @Test
     public void testCheckForQueueEntriesReturnsProjectForDifferentNode() {
         when(queue.getItems()).thenReturn(new Queue.Item[]{nonBlockingBuildableItem, buildableItemOnDifferentNode});
 
-        assertThat((Project) monitor.checkForQueueEntries(mock(BuildableItem.class)), is(equalTo(project)));
+        assertThat((Project) monitor.checkForQueueEntries(Mockito.mock(BuildableItem.class)), is(equalTo(project)));
     }
 
     @Test
     public void testCheckForQueueEntriesReturnsBlockedTaskThatIsQueued() {
         when(queue.getItems()).thenReturn(new Queue.Item[]{nonBlockingBlockedItem, blockedItem});
 
-        assertThat((Project) monitor.checkForQueueEntries(mock(BuildableItem.class)), is(equalTo(project)));
+        assertThat((Project) monitor.checkForQueueEntries(Mockito.mock(BuildableItem.class)), is(equalTo(project)));
     }
 
     @Test
     public void testCheckForQueueEntriesReturnsProjectForDifferentNodeCaseBlocked() {
         when(queue.getItems()).thenReturn(new Queue.Item[]{nonBlockingBlockedItem, blockedItemOnDifferentNode});
 
-        assertThat((Project) monitor.checkForQueueEntries(mock(BuildableItem.class)), is(equalTo(project)));
+        assertThat((Project) monitor.checkForQueueEntries(Mockito.mock(BuildableItem.class)), is(equalTo(project)));
     }
 
     @Test
     public void testCheckForQueueEntriesReturnsWaitingTaskThatIsQueued() {
         when(queue.getItems()).thenReturn(new Queue.Item[]{nonBlockingWaitingItem, waitingItem});
 
-        assertThat((Project) monitor.checkForQueueEntries(mock(BuildableItem.class)), is(equalTo(project)));
+        assertThat((Project) monitor.checkForQueueEntries(Mockito.mock(BuildableItem.class)), is(equalTo(project)));
     }
 
     @Test
     public void testCheckForQueueEntriesReturnsProjectForDifferentNodeCaseWaiting() {
         when(queue.getItems()).thenReturn(new Queue.Item[]{nonBlockingWaitingItem, waitingItemOnDifferentNode});
 
-        assertThat((Project) monitor.checkForQueueEntries(mock(BuildableItem.class)), is(equalTo(project)));
+        assertThat((Project) monitor.checkForQueueEntries(Mockito.mock(BuildableItem.class)), is(equalTo(project)));
     }
 
     @Test
     public void testCheckForQueueEntriesReturnsNullForNonBlockingItems() {
         when(queue.getItems()).thenReturn(new Queue.Item[]{nonBlockingWaitingItem, nonBlockingBuildableItem, nonBlockingBlockedItem});
 
-        assertThat(monitor.checkForQueueEntries(mock(BuildableItem.class)), is(nullValue()));
+        assertThat(monitor.checkForQueueEntries(Mockito.mock(BuildableItem.class)), is(nullValue()));
 
         //verify that the different project was actually checked (three items are checked for two job names each)
         verify(nonBlockingProject, times(6)).getFullName();

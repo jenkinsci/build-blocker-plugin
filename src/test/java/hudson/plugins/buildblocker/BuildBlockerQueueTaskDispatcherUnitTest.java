@@ -2,7 +2,6 @@ package hudson.plugins.buildblocker;
 
 import hudson.model.AbstractProject;
 import hudson.model.Node;
-import hudson.model.Project;
 import hudson.model.Queue;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,8 +17,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
-
-
 
 @RunWith(MockitoJUnitRunner.class)
 public class BuildBlockerQueueTaskDispatcherUnitTest {
