@@ -75,7 +75,7 @@ public class BlockingJobsMonitorTest {
         FreeStyleProject blockingProject = j.createFreeStyleProject(blockingJobName);
         blockingProject.setAssignedLabel(new LabelAtom("label"));
 
-        CommandInterpreter commandInterpreter = Functions.isWindows() ? new BatchFile("ping -n 1 127.0.0.1 >nul") : new Shell("sleep 1");
+        CommandInterpreter commandInterpreter = Functions.isWindows() ? new BatchFile("ping -n 10 127.0.0.1 >nul") : new Shell("sleep 10");
         blockingProject.getBuildersList().add(commandInterpreter);
 
         future = blockingProject.scheduleBuild2(0);

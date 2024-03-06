@@ -87,7 +87,7 @@ public class BuildBlockerQueueTaskDispatcherTest {
 
         String blockingJobName = "blockingJob";
 
-        CommandInterpreter commandInterpreter = Functions.isWindows() ? new BatchFile("ping -n 1 127.0.0.1 >nul") : new Shell("sleep 1");
+        CommandInterpreter commandInterpreter = Functions.isWindows() ? new BatchFile("ping -n 10 127.0.0.1 >nul") : new Shell("sleep 10");
 
         Future<FreeStyleBuild> future1 = createBlockingProject("xxx", commandInterpreter, masterLabel);
         Future<FreeStyleBuild> future2 = createBlockingProject(blockingJobName, commandInterpreter, masterLabel);
@@ -125,7 +125,7 @@ public class BuildBlockerQueueTaskDispatcherTest {
 
         // Job1 runs for 1 second, no dependencies
         FreeStyleProject theJob1 = j.createFreeStyleProject("MultipleExecutor_Job1");
-        CommandInterpreter commandInterpreter = Functions.isWindows() ? new BatchFile("ping -n 1 127.0.0.1 >nul") : new Shell("sleep 1");
+        CommandInterpreter commandInterpreter = Functions.isWindows() ? new BatchFile("ping -n 10 127.0.0.1 >nul") : new Shell("sleep 10");
         theJob1.getBuildersList().add(commandInterpreter);
         assertTrue(theJob1.getBuilds().isEmpty());
 
