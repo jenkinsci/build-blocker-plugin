@@ -223,7 +223,7 @@ public class BuildBlockerQueueTaskDispatcher extends QueueTaskDispatcher {
                 return property;
             }
         }
-        catch (Exception e) {
+        catch (NoClassDefFoundError | Exception e) {
             LOG.logp(FINE, getClass().getName(), "getBuildBlockerProperty", "Unable to check parent for build blocker property. Make sure cloudbees-folder plugin is installed.", e);
         }
 
