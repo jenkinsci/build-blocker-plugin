@@ -3,12 +3,13 @@ package hudson.plugins.buildblocker;
 import hudson.model.AbstractProject;
 import hudson.model.Node;
 import hudson.model.Queue;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
-import org.powermock.reflect.Whitebox;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.lang.reflect.Field;
 
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -18,8 +19,8 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
-public class BuildBlockerQueueTaskDispatcherUnitTest {
+@ExtendWith(MockitoExtension.class)
+class BuildBlockerQueueTaskDispatcherUnitTest {
 
     @Mock
     private BlockingJobsMonitor monitor;
@@ -31,17 +32,20 @@ public class BuildBlockerQueueTaskDispatcherUnitTest {
 
     private BuildBlockerQueueTaskDispatcher dispatcher;
 
-    @Before
-    public void setup() throws IllegalAccessException {
+    @BeforeEach
+    void setUp() throws Exception {
         dispatcher = new BuildBlockerQueueTaskDispatcher(new FieldReturningMonitorFactory(monitor));
 
         project = mock(AbstractProject.class);
         item = mock(Queue.BuildableItem.class);
-        Whitebox.getField(Queue.Item.class, "task").set(item, project);
+
+        Field task = Queue.Item.class.getField("task");
+        task.setAccessible(true);
+        task.set(item, project);
     }
 
     @Test
-    public void testCanRunWithBuildBlockerDisabledDoesNothing() {
+    void testCanRunWithBuildBlockerDisabledDoesNothing() {
         when(project.getProperty(eq(BuildBlockerProperty.class)))
                 .thenReturn(
                         new BuildBlockerPropertyBuilder()
@@ -54,7 +58,7 @@ public class BuildBlockerQueueTaskDispatcherUnitTest {
     }
 
     @Test
-    public void testCanRunWithBuildBlockerEnabledAndNullBlockingJobsDoesNothing() {
+    void testCanRunWithBuildBlockerEnabledAndNullBlockingJobsDoesNothing() {
         when(project.getProperty(eq(BuildBlockerProperty.class)))
                 .thenReturn(
                         new BuildBlockerPropertyBuilder()
@@ -67,7 +71,7 @@ public class BuildBlockerQueueTaskDispatcherUnitTest {
     }
 
     @Test
-    public void testCanRunWithGlobalEnabledCallsCorrectMethods() {
+    void testCanRunWithGlobalEnabledCallsCorrectMethods() {
         when(project.getProperty(eq(BuildBlockerProperty.class)))
                 .thenReturn(
                         new BuildBlockerPropertyBuilder()
@@ -83,7 +87,7 @@ public class BuildBlockerQueueTaskDispatcherUnitTest {
     }
 
     @Test
-    public void testCanRunWithGlobalEnabledAndCheckBuildableEnabledCallsCorrectMethods() {
+    void testCanRunWithGlobalEnabledAndCheckBuildableEnabledCallsCorrectMethods() {
         when(project.getProperty(eq(BuildBlockerProperty.class)))
                 .thenReturn(
                         new BuildBlockerPropertyBuilder()
@@ -101,7 +105,7 @@ public class BuildBlockerQueueTaskDispatcherUnitTest {
     }
 
     @Test
-    public void testCanRunWithGlobalEnabledAndCheckAllEnabledCallsCorrectMethods() {
+    void testCanRunWithGlobalEnabledAndCheckAllEnabledCallsCorrectMethods() {
         when(project.getProperty(eq(BuildBlockerProperty.class)))
                 .thenReturn(
                         new BuildBlockerPropertyBuilder()
@@ -119,7 +123,7 @@ public class BuildBlockerQueueTaskDispatcherUnitTest {
     }
 
     @Test
-    public void testCanRunWithGlobalEnabledAndCheckBuildableEnabledAndCheckAllEnabledCallsCorrectMethods() {
+    void testCanRunWithGlobalEnabledAndCheckBuildableEnabledAndCheckAllEnabledCallsCorrectMethods() {
         when(project.getProperty(eq(BuildBlockerProperty.class)))
                 .thenReturn(
                         new BuildBlockerPropertyBuilder()
@@ -138,7 +142,7 @@ public class BuildBlockerQueueTaskDispatcherUnitTest {
     }
 
     @Test
-    public void testCanRunWithNodeEnabledDoesNothing() {
+    void testCanRunWithNodeEnabledDoesNothing() {
         when(project.getProperty(eq(BuildBlockerProperty.class)))
                 .thenReturn(
                         new BuildBlockerPropertyBuilder()
@@ -153,7 +157,7 @@ public class BuildBlockerQueueTaskDispatcherUnitTest {
     }
 
     @Test
-    public void testCanRunWithNodeEnabledAndCheckBuildableEnabledDoesNothing() {
+    void testCanRunWithNodeEnabledAndCheckBuildableEnabledDoesNothing() {
         when(project.getProperty(eq(BuildBlockerProperty.class)))
                 .thenReturn(
                         new BuildBlockerPropertyBuilder()
@@ -169,7 +173,7 @@ public class BuildBlockerQueueTaskDispatcherUnitTest {
     }
 
     @Test
-    public void testCanRunWithNodeEnabledAndCheckAllEnabledDoesNothing() {
+    void testCanRunWithNodeEnabledAndCheckAllEnabledDoesNothing() {
         when(project.getProperty(eq(BuildBlockerProperty.class)))
                 .thenReturn(
                         new BuildBlockerPropertyBuilder()
@@ -185,7 +189,7 @@ public class BuildBlockerQueueTaskDispatcherUnitTest {
     }
 
     @Test
-    public void testCanRunWithNodeEnabledAndCheckAllEnabledAndCheckBuildableEnabledDoesNothing() {
+    void testCanRunWithNodeEnabledAndCheckAllEnabledAndCheckBuildableEnabledDoesNothing() {
         when(project.getProperty(eq(BuildBlockerProperty.class)))
                 .thenReturn(
                         new BuildBlockerPropertyBuilder()
@@ -202,7 +206,7 @@ public class BuildBlockerQueueTaskDispatcherUnitTest {
     }
 
     @Test
-    public void testCanRunWithGlobalEnabledAndNodeEnabledCallsCorrectMethods() {
+    void testCanRunWithGlobalEnabledAndNodeEnabledCallsCorrectMethods() {
         when(project.getProperty(eq(BuildBlockerProperty.class)))
                 .thenReturn(
                         new BuildBlockerPropertyBuilder()
@@ -219,7 +223,7 @@ public class BuildBlockerQueueTaskDispatcherUnitTest {
     }
 
     @Test
-    public void testCanRunWithGlobalEnabledAndNodeEnabledAndCheckAllEnabledCallsCorrectMethods() {
+    void testCanRunWithGlobalEnabledAndNodeEnabledAndCheckAllEnabledCallsCorrectMethods() {
         when(project.getProperty(eq(BuildBlockerProperty.class)))
                 .thenReturn(
                         new BuildBlockerPropertyBuilder()
@@ -238,7 +242,7 @@ public class BuildBlockerQueueTaskDispatcherUnitTest {
     }
 
     @Test
-    public void testCanRunWithGlobalEnabledAndNodeEnabledAndCheckBuildableEnabledCallsCorrectMethods() {
+    void testCanRunWithGlobalEnabledAndNodeEnabledAndCheckBuildableEnabledCallsCorrectMethods() {
         when(project.getProperty(eq(BuildBlockerProperty.class)))
                 .thenReturn(
                         new BuildBlockerPropertyBuilder()
@@ -257,7 +261,7 @@ public class BuildBlockerQueueTaskDispatcherUnitTest {
     }
 
     @Test
-    public void testCanRunWithGlobalEnabledAndNodeEnabledAndCheckAllEnabledAndCheckBuildableEnabledCallsCorrectMethods() {
+    void testCanRunWithGlobalEnabledAndNodeEnabledAndCheckAllEnabledAndCheckBuildableEnabledCallsCorrectMethods() {
         when(project.getProperty(eq(BuildBlockerProperty.class)))
                 .thenReturn(
                         new BuildBlockerPropertyBuilder()
@@ -277,7 +281,7 @@ public class BuildBlockerQueueTaskDispatcherUnitTest {
     }
 
     @Test
-    public void testCanTakeWithBuildBlockerDisabledDoesNothing() {
+    void testCanTakeWithBuildBlockerDisabledDoesNothing() {
         when(project.getProperty(eq(BuildBlockerProperty.class)))
                 .thenReturn(
                         new BuildBlockerPropertyBuilder()
@@ -290,7 +294,7 @@ public class BuildBlockerQueueTaskDispatcherUnitTest {
     }
 
     @Test
-    public void testCanTakeWithBuildBlockerEnabledAndNullBlockingJobsDoesNothing() {
+    void testCanTakeWithBuildBlockerEnabledAndNullBlockingJobsDoesNothing() {
         when(project.getProperty(eq(BuildBlockerProperty.class)))
                 .thenReturn(
                         new BuildBlockerPropertyBuilder()
@@ -303,7 +307,7 @@ public class BuildBlockerQueueTaskDispatcherUnitTest {
     }
 
     @Test
-    public void testCanTakeWithGlobalEnabledDoesNothing() {
+    void testCanTakeWithGlobalEnabledDoesNothing() {
         when(project.getProperty(eq(BuildBlockerProperty.class)))
                 .thenReturn(
                         new BuildBlockerPropertyBuilder()
@@ -318,7 +322,7 @@ public class BuildBlockerQueueTaskDispatcherUnitTest {
     }
 
     @Test
-    public void testCanTakeWithGlobalEnabledAndCheckAllEnabledDoesNothing() {
+    void testCanTakeWithGlobalEnabledAndCheckAllEnabledDoesNothing() {
         when(project.getProperty(eq(BuildBlockerProperty.class)))
                 .thenReturn(
                         new BuildBlockerPropertyBuilder()
@@ -334,7 +338,7 @@ public class BuildBlockerQueueTaskDispatcherUnitTest {
     }
 
     @Test
-    public void testCanTakeWithGlobalEnabledAndCheckBuildableEnabledDoesNothing() {
+    void testCanTakeWithGlobalEnabledAndCheckBuildableEnabledDoesNothing() {
         when(project.getProperty(eq(BuildBlockerProperty.class)))
                 .thenReturn(
                         new BuildBlockerPropertyBuilder()
@@ -350,7 +354,7 @@ public class BuildBlockerQueueTaskDispatcherUnitTest {
     }
 
     @Test
-    public void testCanTakeWithGlobalEnabledAndCheckBuildableEnabledAndCheckAllEnabledDoesNothing() {
+    void testCanTakeWithGlobalEnabledAndCheckBuildableEnabledAndCheckAllEnabledDoesNothing() {
         when(project.getProperty(eq(BuildBlockerProperty.class)))
                 .thenReturn(
                         new BuildBlockerPropertyBuilder()
@@ -367,7 +371,7 @@ public class BuildBlockerQueueTaskDispatcherUnitTest {
     }
 
     @Test
-    public void testCanTakeWithNodeEnabledCallsCorrectMethods() {
+    void testCanTakeWithNodeEnabledCallsCorrectMethods() {
         when(project.getProperty(eq(BuildBlockerProperty.class)))
                 .thenReturn(
                         new BuildBlockerPropertyBuilder()
@@ -383,7 +387,7 @@ public class BuildBlockerQueueTaskDispatcherUnitTest {
     }
 
     @Test
-    public void testCanTakeWithNodeEnabledAndCheckBuildableEnabledCallsCorrectMethods() {
+    void testCanTakeWithNodeEnabledAndCheckBuildableEnabledCallsCorrectMethods() {
         when(project.getProperty(eq(BuildBlockerProperty.class)))
                 .thenReturn(
                         new BuildBlockerPropertyBuilder()
@@ -401,7 +405,7 @@ public class BuildBlockerQueueTaskDispatcherUnitTest {
     }
 
     @Test
-    public void testCanTakeWithNodeEnabledAndCheckAllEnabledCallsCorrectMethods() {
+    void testCanTakeWithNodeEnabledAndCheckAllEnabledCallsCorrectMethods() {
         when(project.getProperty(eq(BuildBlockerProperty.class)))
                 .thenReturn(
                         new BuildBlockerPropertyBuilder()
@@ -419,7 +423,7 @@ public class BuildBlockerQueueTaskDispatcherUnitTest {
     }
 
     @Test
-    public void testCanTakeWithNodeEnabledAndCheckBuildableEnabledAndCheckAllEnabledCallsCorrectMethods() {
+    void testCanTakeWithNodeEnabledAndCheckBuildableEnabledAndCheckAllEnabledCallsCorrectMethods() {
         when(project.getProperty(eq(BuildBlockerProperty.class)))
                 .thenReturn(
                         new BuildBlockerPropertyBuilder()
@@ -438,7 +442,7 @@ public class BuildBlockerQueueTaskDispatcherUnitTest {
     }
 
     @Test
-    public void testCanTakeWithGlobalEnabledAndNodeEnabledCallsCorrectMethods() {
+    void testCanTakeWithGlobalEnabledAndNodeEnabledCallsCorrectMethods() {
         when(project.getProperty(eq(BuildBlockerProperty.class)))
                 .thenReturn(
                         new BuildBlockerPropertyBuilder()
@@ -454,7 +458,7 @@ public class BuildBlockerQueueTaskDispatcherUnitTest {
     }
 
     @Test
-    public void testCanTakeWithGlobalEnabledAndNodeEnabledAndCheckAllEnabledCallsCorrectMethods() {
+    void testCanTakeWithGlobalEnabledAndNodeEnabledAndCheckAllEnabledCallsCorrectMethods() {
         when(project.getProperty(eq(BuildBlockerProperty.class)))
                 .thenReturn(new BuildBlockerPropertyBuilder()
                         .setUseBuildBlocker()
@@ -470,7 +474,7 @@ public class BuildBlockerQueueTaskDispatcherUnitTest {
     }
 
     @Test
-    public void testCanTakeWithGlobalEnabledAndNodeEnabledAndCheckBuildableEnabledCallsCorrectMethods() {
+    void testCanTakeWithGlobalEnabledAndNodeEnabledAndCheckBuildableEnabledCallsCorrectMethods() {
         when(project.getProperty(eq(BuildBlockerProperty.class)))
                 .thenReturn(new BuildBlockerPropertyBuilder()
                         .setUseBuildBlocker()
@@ -486,7 +490,7 @@ public class BuildBlockerQueueTaskDispatcherUnitTest {
     }
 
     @Test
-    public void testCanTakeWithGlobalEnabledAndNodeEnabledAndCheckBuildableEnabledAndCheckAllEnabledCallsCorrectMethods() {
+    void testCanTakeWithGlobalEnabledAndNodeEnabledAndCheckBuildableEnabledAndCheckAllEnabledCallsCorrectMethods() {
         when(project.getProperty(eq(BuildBlockerProperty.class)))
                 .thenReturn(new BuildBlockerPropertyBuilder()
                         .setUseBuildBlocker()
@@ -502,9 +506,9 @@ public class BuildBlockerQueueTaskDispatcherUnitTest {
         verifyNoInteractions(monitor);
     }
 
-    private class FieldReturningMonitorFactory implements MonitorFactory {
+    private static class FieldReturningMonitorFactory implements MonitorFactory {
 
-        private BlockingJobsMonitor monitor;
+        private final BlockingJobsMonitor monitor;
 
         @Override
         public BlockingJobsMonitor build(String blockingJobs) {
