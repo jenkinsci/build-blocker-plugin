@@ -25,19 +25,31 @@
 package hudson.plugins.buildblocker;
 
 import hudson.model.Job;
-import org.jvnet.hudson.test.HudsonTestCase;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Unit tests
  */
-public class BuildBlockerPropertyTest extends HudsonTestCase {
+@WithJenkins
+class BuildBlockerPropertyTest {
+
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     /**
      * Simple property test
-     *
-     * @throws Exception
      */
-    public void testIsApplicable() throws Exception {
+    @Test
+    void testIsApplicable() {
         BuildBlockerProperty property = new BuildBlockerPropertyBuilder().createBuildBlockerProperty();
 
         assertTrue(property.getDescriptor().isApplicable(Job.class));

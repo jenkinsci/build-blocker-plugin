@@ -25,7 +25,6 @@
 package hudson.plugins.buildblocker;
 
 import hudson.Functions;
-import hudson.model.Action;
 import hudson.model.Computer;
 import hudson.model.Executor;
 import hudson.model.FreeStyleBuild;
@@ -40,30 +39,38 @@ import hudson.slaves.SlaveComputer;
 import hudson.tasks.BatchFile;
 import hudson.tasks.CommandInterpreter;
 import hudson.tasks.Shell;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
+import static org.awaitility.Awaitility.await;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Unit tests
  */
-public class BuildBlockerQueueTaskDispatcherTest {
+@WithJenkins
+class BuildBlockerQueueTaskDispatcherTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     /**
      * One test for all for faster execution.
@@ -71,7 +78,7 @@ public class BuildBlockerQueueTaskDispatcherTest {
      * @throws Exception
      */
     @Test
-    public void testCanRun() throws Exception {
+    void testCanRun() throws Exception {
         // init slave
         LabelAtom slaveLabel = new LabelAtom("slave");
         LabelAtom masterLabel = new LabelAtom("built-in");
@@ -79,9 +86,8 @@ public class BuildBlockerQueueTaskDispatcherTest {
         DumbSlave slave = j.createSlave(slaveLabel);
         SlaveComputer c = slave.getComputer();
         c.connect(false).get(); // wait until it's connected
-        if (c.isOffline()) {
-            fail("Slave failed to go online: " + c.getLog());
-        }
+
+        assertFalse(c.isOffline(), "Slave failed to go online: " + c.getLog());
 
         BuildBlockerQueueTaskDispatcher dispatcher = new BuildBlockerQueueTaskDispatcher();
 
@@ -96,7 +102,7 @@ public class BuildBlockerQueueTaskDispatcherTest {
         FreeStyleProject project = j.createFreeStyleProject();
         project.setAssignedLabel(slaveLabel);
 
-        Queue.BuildableItem item = new Queue.BuildableItem(new Queue.WaitingItem(Calendar.getInstance(), project, new ArrayList<Action>()));
+        Queue.BuildableItem item = new Queue.BuildableItem(new Queue.WaitingItem(Calendar.getInstance(), project, new ArrayList<>()));
 
         CauseOfBlockage causeOfBlockage = dispatcher.canRun(item);
 
@@ -115,21 +121,19 @@ public class BuildBlockerQueueTaskDispatcherTest {
 
         assertTrue(causeOfBlockage.getShortDescription().contains(" by " + blockingJobName + "."));
 
-        while (!(future1.isDone() && future2.isDone() && future3.isDone())) {
-            // wait until jobs are done.
-        }
+        // wait until jobs are done.
+        await().atMost(30, TimeUnit.SECONDS).until(() -> future1.isDone() && future2.isDone() && future3.isDone());
     }
 
     @Test
-    public void testMultipleExecutors() throws Exception {
-
+    void testMultipleExecutors() throws Exception {
         // Job1 runs for 1 second, no dependencies
         FreeStyleProject theJob1 = j.createFreeStyleProject("MultipleExecutor_Job1");
         CommandInterpreter commandInterpreter = Functions.isWindows() ? new BatchFile("ping -n 10 127.0.0.1 >nul") : new Shell("sleep 10");
         theJob1.getBuildersList().add(commandInterpreter);
         assertTrue(theJob1.getBuilds().isEmpty());
 
-        // Job2 returns immediatly but can't run while Job1 is running.
+        // Job2 returns immediately but can't run while Job1 is running.
         FreeStyleProject theJob2 = j.createFreeStyleProject("MultipleExecutor_Job2");
         {
             BuildBlockerProperty theProperty = new BuildBlockerPropertyBuilder()
@@ -142,15 +146,15 @@ public class BuildBlockerQueueTaskDispatcherTest {
         }
         assertTrue(theJob1.getBuilds().isEmpty());
 
-        // allow executing two simultanious jobs
+        // allow executing two simultaneous jobs
         int theOldNumExecutors = j.jenkins.getNumExecutors();
         j.jenkins.setNumExecutors(2);
 
         Future<FreeStyleBuild> theFuture1 = theJob1.scheduleBuild2(0);
         Future<FreeStyleBuild> theFuture2 = theJob2.scheduleBuild2(0);
-        while (!theFuture1.isDone() || !theFuture2.isDone()) {
-            // let the jobs process
-        }
+
+        // let the jobs process
+        await().atMost(30, TimeUnit.SECONDS).until(() -> theFuture1.isDone() && theFuture2.isDone());
 
         // check if job2 was not started before job1 was finished
         Run theRun1 = theJob1.getLastBuild();
@@ -164,8 +168,7 @@ public class BuildBlockerQueueTaskDispatcherTest {
     }
 
     @Test
-    public void testSelfExcludingJobs() throws Exception {
-
+    void testSelfExcludingJobs() throws Exception {
         BuildBlockerProperty theProperty = new BuildBlockerPropertyBuilder()
                 .setBlockingJobs("SelfExcluding_.*")
                 .setUseBuildBlocker()
@@ -181,7 +184,7 @@ public class BuildBlockerQueueTaskDispatcherTest {
         theJob2.addProperty(theProperty);
         assertTrue(theJob2.getBuilds().isEmpty());
 
-        // allow executing two simultanious jobs
+        // allow executing two simultaneous jobs
         int theOldNumExecutors = j.jenkins.getNumExecutors();
         j.jenkins.setNumExecutors(2);
 
@@ -205,7 +208,7 @@ public class BuildBlockerQueueTaskDispatcherTest {
             theEndTime = System.currentTimeMillis();
         }
 
-        // if more then five seconds have passed, we assume its a deadlock.
+        // if more than five seconds have passed, we assume its a deadlock.
         assertTrue(theEndTime < theStartTime + 5000);
 
         // restore changed settings
@@ -217,9 +220,9 @@ public class BuildBlockerQueueTaskDispatcherTest {
     /**
      * Returns the future object for a newly created project.
      *
-     * @param blockingJobName the name for the project
+     * @param blockingJobName    the name for the project
      * @param commandInterpreter the command interpreter to add
-     * @param label           the label to bind to master or slave
+     * @param label              the label to bind to master or slave
      * @return the future object for a newly created project
      * @throws IOException
      */
@@ -231,9 +234,7 @@ public class BuildBlockerQueueTaskDispatcherTest {
         blockingProject.getBuildersList().add(commandInterpreter);
         Future<FreeStyleBuild> future = blockingProject.scheduleBuild2(0);
 
-        while (!blockingProject.isBuilding()) {
-            // wait until job is started
-        }
+        await().atMost(30, TimeUnit.SECONDS).until(() -> blockingProject.isBuilding());
 
         return future;
     }
