@@ -32,7 +32,7 @@ import hudson.model.Queue;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.model.queue.QueueTaskDispatcher;
 import jenkins.model.Jenkins;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import java.util.logging.Logger;
 
 import static java.util.logging.Level.FINE;
