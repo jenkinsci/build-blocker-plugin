@@ -28,7 +28,7 @@ import hudson.matrix.MatrixConfiguration;
 import hudson.model.*;
 import hudson.model.queue.WorkUnit;
 import jenkins.model.Jenkins;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;

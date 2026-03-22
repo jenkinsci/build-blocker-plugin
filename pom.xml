@@ -29,7 +29,7 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>5.17</version>
+        <version>5.28</version>
         <relativePath />
     </parent>
 
@@ -86,7 +86,7 @@
             <dependency>
                 <groupId>io.jenkins.tools.bom</groupId>
                 <artifactId>bom-${jenkins.baseline}.x</artifactId>
-                <version>4862.vc32a_71c3e731</version>
+                <version>5888.vd99c2b_38128d</version>
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
@@ -96,11 +96,15 @@
     <properties>
         <changelist>999999-SNAPSHOT</changelist>
         <gitHubRepo>jenkinsci/${project.artifactId}</gitHubRepo>
-        <jenkins.baseline>2.479</jenkins.baseline>
+        <jenkins.baseline>2.516</jenkins.baseline>
         <jenkins.version>${jenkins.baseline}.3</jenkins.version>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>io.jenkins.plugins</groupId>
+            <artifactId>commons-lang3-api</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>cloudbees-folder</artifactId>
