@@ -98,6 +98,7 @@
         <gitHubRepo>jenkinsci/${project.artifactId}</gitHubRepo>
         <jenkins.baseline>2.516</jenkins.baseline>
         <jenkins.version>${jenkins.baseline}.3</jenkins.version>
+        <ban-junit4-imports.skip>false</ban-junit4-imports.skip>
     </properties>
 
     <dependencies>
