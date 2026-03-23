@@ -28,6 +28,7 @@ import hudson.Functions;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.labels.LabelAtom;
+import hudson.model.queue.QueueTaskFuture;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.SlaveComputer;
 import hudson.tasks.BatchFile;
@@ -37,226 +38,166 @@ import jenkins.model.Jenkins;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
-import static org.junit.Assert.*;
+import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * Unit tests
  */
-public class BlockingJobsMonitorTest {
+@WithJenkins
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+class BlockingJobsMonitorTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private static final String BLOCKING_JOB_NAME = "blockingJob";
 
-    private String blockingJobName;
+    private JenkinsRule j;
 
-    private Future<FreeStyleBuild> future;
-    private Future<WorkflowRun> futureWorkflow;
-
-    protected void FreeStyleSetUp() throws Exception {
-        blockingJobName = "blockingJob";
-
-        // clear queue from preceding tests
-        Jenkins.get().getQueue().clear();
-
-        // init slave
-        DumbSlave slave = j.createSlave();
-        slave.setLabelString("label");
-
-        SlaveComputer c = slave.getComputer();
-        c.connect(false).get(); // wait until it's connected
-
-        FreeStyleProject blockingProject = j.createFreeStyleProject(blockingJobName);
-        blockingProject.setAssignedLabel(new LabelAtom("label"));
-
-        CommandInterpreter commandInterpreter = Functions.isWindows() ? new BatchFile("ping -n 10 127.0.0.1 >nul") : new Shell("sleep 10");
-        blockingProject.getBuildersList().add(commandInterpreter);
-
-        future = blockingProject.scheduleBuild2(0);
-
-        // wait until blocking job started
-        while (!slave.getComputer().getExecutors().get(0).isBusy()) {
-            TimeUnit.SECONDS.sleep(1);
-        }
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
     }
 
-    protected void WorkFlowSetUp() throws Exception {
-        blockingJobName = "blockingJob";
-
-        // clear queue from preceding tests
-        Jenkins.get().getQueue().clear();
-
-        // init slave
-        DumbSlave slave = j.createSlave();
-        slave.setLabelString("label");
-
-        SlaveComputer c = slave.getComputer();
-        c.connect(false).get(); // wait until it's connected
-
-        WorkflowJob workflowBlockingProject = j.jenkins.createProject(WorkflowJob.class, blockingJobName);
-        workflowBlockingProject.setDefinition(new CpsFlowDefinition("node('label') { sleep 10}", true));
-
-        futureWorkflow = workflowBlockingProject.scheduleBuild2(1);
-
-        // wait until blocking job started
-        while (!slave.getComputer().getExecutors().get(0).isBusy()) {
-            TimeUnit.SECONDS.sleep(1);
-        }
+    Stream<Arguments> data() {
+        return Stream.of(
+                Arguments.of("freeStyle", freeStyleSetUp()),
+                Arguments.of("workflow", workflowSetUp()));
     }
 
-    @Test
-    public void testNullMonitorDoesNotBlockWithFreeSytle() throws Exception {
-        FreeStyleSetUp();
+    private Supplier<QueueTaskFuture<FreeStyleBuild>> freeStyleSetUp() {
+        return () -> {
+            try {
+                // clear queue from preceding tests
+                Jenkins.get().getQueue().clear();
+
+                // init slave
+                DumbSlave slave = j.createSlave();
+                slave.setLabelString("label");
+
+                SlaveComputer c = slave.getComputer();
+                c.connect(false).get(); // wait until it's connected
+
+                FreeStyleProject blockingProject = j.createFreeStyleProject(BLOCKING_JOB_NAME);
+                blockingProject.setAssignedLabel(new LabelAtom("label"));
+
+                CommandInterpreter commandInterpreter = Functions.isWindows() ? new BatchFile("ping -n 10 127.0.0.1 >nul") : new Shell("sleep 10");
+                blockingProject.getBuildersList().add(commandInterpreter);
+
+                QueueTaskFuture<FreeStyleBuild> future = blockingProject.scheduleBuild2(0);
+
+                // wait until blocking job started
+                await().atMost(30, TimeUnit.SECONDS).until(() -> slave.getComputer().getExecutors().get(0).isBusy());
+
+                return future;
+            } catch (Exception ex) {
+                throw new IllegalStateException(ex);
+            }
+        };
+    }
+
+    private Supplier<QueueTaskFuture<WorkflowRun>> workflowSetUp() {
+        return () -> {
+            try {
+                // clear queue from preceding tests
+                Jenkins.get().getQueue().clear();
+
+                // init slave
+                DumbSlave slave = j.createSlave();
+                slave.setLabelString("label");
+
+                SlaveComputer c = slave.getComputer();
+                c.connect(false).get(); // wait until it's connected
+
+                WorkflowJob workflowBlockingProject = j.jenkins.createProject(WorkflowJob.class, BLOCKING_JOB_NAME);
+                workflowBlockingProject.setDefinition(new CpsFlowDefinition("node('label') { sleep 10 }", true));
+
+                QueueTaskFuture<WorkflowRun> future = workflowBlockingProject.scheduleBuild2(1);
+
+                // wait until blocking job started
+                await().atMost(30, TimeUnit.SECONDS).until(() -> slave.getComputer().getExecutors().get(0).isBusy());
+
+                return future;
+            } catch (Exception ex) {
+                throw new IllegalStateException(ex);
+            }
+        };
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("data")
+    void testNullMonitorDoesNotBlock(String type, Supplier<QueueTaskFuture<?>> setUp) {
+        QueueTaskFuture<?> future = setUp.get();
         BlockingJobsMonitor blockingJobsMonitorUsingNull = new BlockingJobsMonitor(null);
         assertNull(blockingJobsMonitorUsingNull.checkAllNodesForRunningBuilds());
         assertNull(blockingJobsMonitorUsingNull.checkForBuildableQueueEntries(null));
         // wait until blocking job stopped
-        while (!future.isDone()) {
-            TimeUnit.SECONDS.sleep(1);
-        }
+        await().atMost(30, TimeUnit.SECONDS).until(future::isDone);
     }
 
-    @Test
-    public void testNullMonitorDoesNotBlockWithWorkflow() throws Exception {
-        WorkFlowSetUp();
-        BlockingJobsMonitor blockingJobsMonitorUsingNull = new BlockingJobsMonitor(null);
-        assertNull(blockingJobsMonitorUsingNull.checkAllNodesForRunningBuilds());
-        assertNull(blockingJobsMonitorUsingNull.checkForBuildableQueueEntries(null));
-        // wait until blocking job stopped
-        while (!futureWorkflow.isDone()) {
-            TimeUnit.SECONDS.sleep(1);
-        }
-    }
-
-    @Test
-    public void testNonMatchingMonitorDoesNotBlockWithFreeSytle() throws Exception {
-        FreeStyleSetUp();
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("data")
+    void testNonMatchingMonitorDoesNotBlock(String type, Supplier<QueueTaskFuture<?>> setUp) {
+        QueueTaskFuture<?> future = setUp.get();
         BlockingJobsMonitor blockingJobsMonitorNotMatching = new BlockingJobsMonitor("xxx");
         assertNull(blockingJobsMonitorNotMatching.checkAllNodesForRunningBuilds());
         assertNull(blockingJobsMonitorNotMatching.checkForBuildableQueueEntries(null));
         // wait until blocking job stopped
-        while (!future.isDone()) {
-            TimeUnit.SECONDS.sleep(1);
-        }
+        await().atMost(30, TimeUnit.SECONDS).until(future::isDone);
     }
 
-    @Test
-    public void testNonMatchingMonitorDoesNotBlockWithWorkflow() throws Exception {
-        WorkFlowSetUp();
-        BlockingJobsMonitor blockingJobsMonitorNotMatching = new BlockingJobsMonitor("xxx");
-        assertNull(blockingJobsMonitorNotMatching.checkAllNodesForRunningBuilds());
-        assertNull(blockingJobsMonitorNotMatching.checkForBuildableQueueEntries(null));
-        // wait until blocking job stopped
-        while (!futureWorkflow.isDone()) {
-            TimeUnit.SECONDS.sleep(1);
-        }
-    }
-
-    @Test
-    public void testMatchingMonitorReturnsBlockingJobsDisplayNameWithFreeSytle() throws Exception {
-        FreeStyleSetUp();
-        BlockingJobsMonitor blockingJobsMonitorUsingFullName = new BlockingJobsMonitor(blockingJobName);
-
-        assertEquals(blockingJobName, blockingJobsMonitorUsingFullName.checkAllNodesForRunningBuilds().getDisplayName
-                ());
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("data")
+    void testMatchingMonitorReturnsBlockingJobsDisplayName(String type, Supplier<QueueTaskFuture<?>> setUp) {
+        QueueTaskFuture<?> future = setUp.get();
+        BlockingJobsMonitor blockingJobsMonitorUsingFullName = new BlockingJobsMonitor(BLOCKING_JOB_NAME);
+        assertEquals(BLOCKING_JOB_NAME, blockingJobsMonitorUsingFullName.checkAllNodesForRunningBuilds().getDisplayName());
         assertNull(blockingJobsMonitorUsingFullName.checkForBuildableQueueEntries(null));
         // wait until blocking job stopped
-        while (!future.isDone()) {
-            TimeUnit.SECONDS.sleep(1);
-        }
+        await().atMost(30, TimeUnit.SECONDS).until(future::isDone);
     }
 
-    @Test
-    public void testMatchingMonitorReturnsBlockingJobsDisplayNameWithWorkflow() throws Exception {
-        WorkFlowSetUp();
-        BlockingJobsMonitor blockingJobsMonitorUsingFullName = new BlockingJobsMonitor(blockingJobName);
-
-        assertEquals(blockingJobName, blockingJobsMonitorUsingFullName.checkAllNodesForRunningBuilds().getDisplayName
-                ());
-        assertNull(blockingJobsMonitorUsingFullName.checkForBuildableQueueEntries(null));
-        // wait until blocking job stopped
-        while (!futureWorkflow.isDone()) {
-            TimeUnit.SECONDS.sleep(1);
-        }
-    }
-
-    @Test
-    public void testMonitorBlocksBasedOnRegExWithFreeSytle() throws Exception {
-        FreeStyleSetUp();
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("data")
+    void testMonitorBlocksBasedOnRegEx(String type, Supplier<QueueTaskFuture<?>> setUp) {
+        QueueTaskFuture<?> future = setUp.get();
         BlockingJobsMonitor blockingJobsMonitorUsingRegex = new BlockingJobsMonitor("block.*");
-        assertEquals(blockingJobName, blockingJobsMonitorUsingRegex.checkAllNodesForRunningBuilds().getDisplayName());
+        assertEquals(BLOCKING_JOB_NAME, blockingJobsMonitorUsingRegex.checkAllNodesForRunningBuilds().getDisplayName());
         assertNull(blockingJobsMonitorUsingRegex.checkForBuildableQueueEntries(null));
         // wait until blocking job stopped
-        while (!future.isDone()) {
-            TimeUnit.SECONDS.sleep(1);
-        }
+        await().atMost(30, TimeUnit.SECONDS).until(future::isDone);
     }
 
-    @Test
-    public void testMonitorBlocksBasedOnRegExWitWorkflow() throws Exception {
-        WorkFlowSetUp();
-        BlockingJobsMonitor blockingJobsMonitorUsingRegex = new BlockingJobsMonitor("block.*");
-        assertEquals(blockingJobName, blockingJobsMonitorUsingRegex.checkAllNodesForRunningBuilds().getDisplayName());
-        assertNull(blockingJobsMonitorUsingRegex.checkForBuildableQueueEntries(null));
-        // wait until blocking job stopped
-        while (!futureWorkflow.isDone()) {
-            TimeUnit.SECONDS.sleep(1);
-        }
-    }
-
-    @Test
-    public void testMonitorBlocksIfConfiguredWithSeveralProjectnamesWithFreeSytle() throws Exception {
-        FreeStyleSetUp();
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("data")
+    void testMonitorBlocksIfConfiguredWithSeveralProjectNames(String type, Supplier<QueueTaskFuture<?>> setUp) {
+        QueueTaskFuture<?> future = setUp.get();
         BlockingJobsMonitor blockingJobsMonitorUsingMoreLines = new BlockingJobsMonitor("xxx\nblock.*\nyyy");
-        assertEquals(blockingJobName, blockingJobsMonitorUsingMoreLines.checkAllNodesForRunningBuilds()
-                .getDisplayName());
+        assertEquals(BLOCKING_JOB_NAME, blockingJobsMonitorUsingMoreLines.checkAllNodesForRunningBuilds().getDisplayName());
         assertNull(blockingJobsMonitorUsingMoreLines.checkForBuildableQueueEntries(null));
         // wait until blocking job stopped
-        while (!future.isDone()) {
-            TimeUnit.SECONDS.sleep(1);
-        }
+        await().atMost(30, TimeUnit.SECONDS).until(future::isDone);
     }
 
-   @Test
-    public void testMonitorBlocksIfConfiguredWithSeveralProjectnamesWithWorkflow() throws Exception {
-        WorkFlowSetUp();
-        BlockingJobsMonitor blockingJobsMonitorUsingMoreLines = new BlockingJobsMonitor("xxx\nblock.*\nyyy");
-        assertEquals(blockingJobName, blockingJobsMonitorUsingMoreLines.checkAllNodesForRunningBuilds()
-                .getDisplayName());
-        assertNull(blockingJobsMonitorUsingMoreLines.checkForBuildableQueueEntries(null));
-       // wait until blocking job stopped
-       while (!futureWorkflow.isDone()) {
-           TimeUnit.SECONDS.sleep(1);
-       }
-    }
-
-    @Test
-    public void testMonitorDoesNotBlockIfRegexDoesNotMatchWithFreeSytle() throws Exception {
-        FreeStyleSetUp();
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("data")
+    void testMonitorDoesNotBlockIfRegexDoesNotMatch(String type, Supplier<QueueTaskFuture<?>> setUp) {
+        QueueTaskFuture<?> future = setUp.get();
         BlockingJobsMonitor blockingJobsMonitorUsingWrongRegex = new BlockingJobsMonitor("*BW2S.*QRT.");
         assertNull(blockingJobsMonitorUsingWrongRegex.checkAllNodesForRunningBuilds());
         assertNull(blockingJobsMonitorUsingWrongRegex.checkForBuildableQueueEntries(null));
         // wait until blocking job stopped
-        while (!future.isDone()) {
-            TimeUnit.SECONDS.sleep(1);
-        }
-    }
-
-    @Test
-    public void testMonitorDoesNotBlockIfRegexDoesNotMatchWithWorkflow() throws Exception {
-        WorkFlowSetUp();
-        BlockingJobsMonitor blockingJobsMonitorUsingWrongRegex = new BlockingJobsMonitor("*BW2S.*QRT.");
-        assertNull(blockingJobsMonitorUsingWrongRegex.checkAllNodesForRunningBuilds());
-        assertNull(blockingJobsMonitorUsingWrongRegex.checkForBuildableQueueEntries(null));
-        // wait until blocking job stopped
-        while (!futureWorkflow.isDone()) {
-            TimeUnit.SECONDS.sleep(1);
-        }
+        await().atMost(30, TimeUnit.SECONDS).until(future::isDone);
     }
 }
