@@ -198,16 +198,15 @@ public class BuildBlockerQueueTaskDispatcher extends QueueTaskDispatcher {
 
     @CheckForNull
     private IBuildBlockerProperty getBuildBlockerProperty(Queue.Item item) {
-
-        if (!(item.task instanceof Job)) {
-            if (!(item.task.getOwnerTask() instanceof Job<?, ?> ownerJob)) {
-                return null;
-            } else {
-                IBuildBlockerProperty property = ownerJob.getProperty(BuildBlockerProperty.class);
-                return property != null ? property : BuildBlockerFolderProperty.getBuildBlockerFolderProperty(ownerJob);
-            }
+        final Job<?, ?> job;
+        if (item.task instanceof Job<?, ?> directJob) {
+            job = directJob;
+        } else if (item.task.getOwnerTask() instanceof Job<?, ?> ownerJob) {
+            job = ownerJob;
+        } else {
+            return null;
         }
-        Job<?,?> job = (Job<?,?>) item.task;
+
         IBuildBlockerProperty property = job.getProperty(BuildBlockerProperty.class);
         if (property != null && property.isUseBuildBlocker()) {
             LOG.logp(FINE, getClass().getName(), "getBuildBlockerProperty", "Found build blocker property on job " + job.getFullDisplayName());
@@ -222,8 +221,7 @@ public class BuildBlockerQueueTaskDispatcher extends QueueTaskDispatcher {
                 LOG.logp(FINE, getClass().getName(), "getBuildBlockerProperty", "Found build blocker property on parent of job " + job.getFullDisplayName());
                 return property;
             }
-        }
-        catch (NoClassDefFoundError | Exception e) {
+        } catch (NoClassDefFoundError | Exception e) {
             LOG.logp(FINE, getClass().getName(), "getBuildBlockerProperty", "Unable to check parent for build blocker property. Make sure cloudbees-folder plugin is installed.", e);
         }
 
