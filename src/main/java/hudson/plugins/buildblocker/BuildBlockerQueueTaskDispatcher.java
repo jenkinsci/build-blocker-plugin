@@ -31,7 +31,6 @@ import hudson.model.Node;
 import hudson.model.Queue;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.model.queue.QueueTaskDispatcher;
-import jenkins.model.Jenkins;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import java.util.logging.Logger;
 
@@ -201,10 +200,11 @@ public class BuildBlockerQueueTaskDispatcher extends QueueTaskDispatcher {
     private IBuildBlockerProperty getBuildBlockerProperty(Queue.Item item) {
 
         if (!(item.task instanceof Job)) {
-            if (!(item.task.getOwnerTask() instanceof Job)) {
+            if (!(item.task.getOwnerTask() instanceof Job<?, ?> ownerJob)) {
                 return null;
             } else {
-                return ((Job<?, ?>) item.task.getOwnerTask()).getProperty(BuildBlockerProperty.class);
+                IBuildBlockerProperty property = ownerJob.getProperty(BuildBlockerProperty.class);
+                return property != null ? property : BuildBlockerFolderProperty.getBuildBlockerFolderProperty(ownerJob);
             }
         }
         Job<?,?> job = (Job<?,?>) item.task;
@@ -217,7 +217,7 @@ public class BuildBlockerQueueTaskDispatcher extends QueueTaskDispatcher {
         // Check property on parent
         try {
             LOG.logp(FINE, getClass().getName(), "getBuildBlockerProperty", "checking parent getBuildBlockerFolderProperty");
-            property = Jenkins.get().getDescriptorByType(BuildBlockerFolderProperty.DescriptorImpl.class).getBuildBlockerFolderProperty(job);
+            property = BuildBlockerFolderProperty.getBuildBlockerFolderProperty(job);
             if (property != null && property.isUseBuildBlocker()) {
                 LOG.logp(FINE, getClass().getName(), "getBuildBlockerProperty", "Found build blocker property on parent of job " + job.getFullDisplayName());
                 return property;

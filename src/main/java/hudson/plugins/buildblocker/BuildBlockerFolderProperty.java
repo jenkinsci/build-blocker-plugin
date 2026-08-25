@@ -4,6 +4,7 @@ import com.cloudbees.hudson.plugins.folder.*;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.Extension;
+import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Job;
 import hudson.util.FormValidation;
@@ -69,6 +70,29 @@ public class BuildBlockerFolderProperty extends AbstractFolderProperty<AbstractF
         this.blockingJobs = blockingJobs;
     }
 
+    /**
+     * Return the build blocker folder property for a job by checking all parents
+     * @param job The job
+     * @return The build blocker folder property or null
+     */
+    static @Nullable IBuildBlockerProperty getBuildBlockerFolderProperty(Job<?, ?> job) {
+        ItemGroup<?> itemGroup = job.getParent();
+        while (itemGroup != null) {
+            if (itemGroup instanceof AbstractFolder<?> folder) {
+                BuildBlockerFolderProperty folderProperty = folder.getProperties().get(BuildBlockerFolderProperty.class);
+                if (folderProperty != null) {
+                    return folderProperty;
+                }
+            }
+            if (itemGroup instanceof Item item) {
+                itemGroup = item.getParent();
+            } else {
+                break;
+            }
+        }
+        return null;
+    }
+
     @Extension(optional = true)
     @Symbol("folderBuildBlocker")
     public static final class DescriptorImpl extends AbstractFolderPropertyDescriptor {
@@ -85,22 +109,8 @@ public class BuildBlockerFolderProperty extends AbstractFolderProperty<AbstractF
             return BuildBlockerUtils.doCheckRegex(blockingJobs);
         }
 
-        /**
-         * Return the build blocker folder property for a job by checking all parent
-         * @param job The job
-         * @return The build blocker folder property or null
-         */
         public @Nullable IBuildBlockerProperty getBuildBlockerFolderProperty(Job<?, ?> job) {
-            ItemGroup<?> itemGroup = job.getParent();
-            while (itemGroup instanceof AbstractFolder<?>) {
-                AbstractFolder<?> folder = (AbstractFolder<?>) itemGroup;
-                BuildBlockerFolderProperty folderProperty = folder.getProperties().get(BuildBlockerFolderProperty.class);
-                if (folderProperty != null) {
-                    return folderProperty;
-                }
-                itemGroup = folder.getParent();
-            }
-            return null;
+            return BuildBlockerFolderProperty.getBuildBlockerFolderProperty(job);
         }
 
     }
